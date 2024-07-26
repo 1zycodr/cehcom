@@ -8,3 +8,6 @@ static
 media
 certbot
 nginx
+.idea
+.vscode
+__pycache__
