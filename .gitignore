@@ -1,0 +1,8 @@
+venv
+env
+.env
+.venv
+nginx
+renew.sh
+static
+media
