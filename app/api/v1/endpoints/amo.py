@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request
+from typing import Any
+
+from fastapi import APIRouter, Body
 
 from errors.response import Respond
 
@@ -26,6 +28,6 @@ def init_oauth2(
     description='Хук для google docs',
 )
 def docs(
-        request: Request,
+        payload: Any = Body(None),
 ):
-    print(request.json())
+    print(payload)
