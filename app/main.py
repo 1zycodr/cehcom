@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core import settings
 from app.core.middleware import catch_exceptions_middleware
+from app.services.amocrm import AMOCRMService
+from app.api.v1.router import api_router as v1_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -20,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(v1_router, prefix=settings.API_V1_STR)
+app.include_router(v1_router, prefix=settings.API_V1_STR)
 
 # Enable exception handling middleware.py
 if settings.ENVIRONMENT != settings.Environment.local.value:
