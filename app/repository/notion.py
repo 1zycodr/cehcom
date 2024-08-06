@@ -17,7 +17,10 @@ class NotionRepo:
     client = Client(auth=settings.NOTION_SECRET)
 
     @classmethod
-    def load_updated_at(cls) -> str:
+    def load_updated_at(cls, update_all: bool = False) -> str:
+        if update_all:
+            updated_at = datetime.now(cls.timezone) - timedelta(days=365 * 3)
+            return updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f%Z')
         load_dotenv(find_dotenv())
         last_run_date = os.getenv(cls.updated_at_key)
         if last_run_date:
