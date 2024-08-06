@@ -7,6 +7,7 @@ from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
 from app.schemas.notion import *
+from ..core.config import red
 from ..repository.amocrm import AmoRepo
 from ..repository.notion import NotionRepo
 
@@ -113,6 +114,8 @@ class NotionService:
         print('Updated:', len(items_for_update))
         print('Created:', len(items_for_create))
         print('Deleted:', len(items_for_delete))
+
+        red.delete('sync-running')
 
         return
 

@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import os
+import redis
+from redis.client import Redis
+
 from enum import Enum
+
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
+
+red: Redis = redis.Redis(host='redis', port=6379, db=0)
 
 
 class Settings(BaseSettings):

@@ -4,6 +4,8 @@ services:
     restart: always
     networks:
       - backend_network
+    ports:
+      - 6379:6379
   webserver:
     image: nginx:1.27.0-alpine3.19-slim 
     ports:

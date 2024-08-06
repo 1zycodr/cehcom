@@ -1,3 +1,4 @@
+import redis
 import uvicorn
 
 from fastapi import FastAPI
@@ -5,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utilities import repeat_every
 
 from app.core import settings
+from app.core.config import red
 from app.core.middleware import catch_exceptions_middleware
 from app.job.sync import sync_notion_amo
 from app.services import NotionService
@@ -34,6 +36,10 @@ if settings.ENVIRONMENT != settings.Environment.local.value:
 @app.on_event('startup')
 @repeat_every(seconds=60, wait_first=True)
 def sync():
+    if red.get('sync-running') is not None:
+        print('sync already running')
+        return
+    red.set('sync-running', '1')
     sync_notion_amo()
 
 
@@ -47,5 +53,5 @@ if __name__ == "__main__":
     #   2) изменяем статус на "удалено из таблицы" в amo
     # data = AmoRepo.get_all_products()
     # NotionService.sync_with_amo()
-
+    red.delete('sync-running')
     uvicorn.run("app.main:app", host='0.0.0.0', port=8000)
