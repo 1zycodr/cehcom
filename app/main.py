@@ -36,7 +36,7 @@ if settings.ENVIRONMENT != settings.Environment.local.value:
 
 
 @app.on_event('startup')
-@repeat_every(seconds=4, wait_first=True)
+@repeat_every(seconds=60, wait_first=True)
 async def print_hello():
     sync_notion_amo()
 
