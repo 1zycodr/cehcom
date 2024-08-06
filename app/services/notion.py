@@ -18,8 +18,8 @@ class NotionService:
     timezone = pytz.timezone('Asia/Almaty')
 
     @classmethod
-    def load_updated_from_notion(cls) -> list[Item]:
-        updated_at = cls.notion_repo.load_updated_at()
+    def load_updated_from_notion(cls, update_all: bool = False) -> list[Item]:
+        updated_at = cls.notion_repo.load_updated_at(update_all)
         filter = {
             "and": [
                 {
@@ -51,9 +51,10 @@ class NotionService:
         return items
 
     @classmethod
-    def sync_with_amo(cls):
+    def sync_with_amo(cls, update_all: bool = False):
+        print('start sync', update_all)
         time_start = datetime.now(cls.timezone)
-        items = cls.load_updated_from_notion()
+        items = cls.load_updated_from_notion(update_all)
         amo_items = cls.amo_repo.get_all_products()
         amo_items_ids = {
             amo_item.nid: amo_item

@@ -2,10 +2,6 @@ import uvicorn
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.executors.pool import ThreadPoolExecutor
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.events import EVENT_JOB_MISSED, EVENT_JOB_ERROR
 from fastapi_utilities import repeat_every
 
 from app.core import settings
@@ -37,7 +33,7 @@ if settings.ENVIRONMENT != settings.Environment.local.value:
 
 @app.on_event('startup')
 @repeat_every(seconds=60, wait_first=True)
-async def print_hello():
+def sync():
     sync_notion_amo()
 
 
