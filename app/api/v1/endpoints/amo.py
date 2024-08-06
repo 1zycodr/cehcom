@@ -27,7 +27,7 @@ def sync_catalog(background_tasks: BackgroundTasks):
         return 'Запрос проигнорирован. Процесс полного обновления уже был запущен недавно.'
     red.set('sync-running', '1')
     background_tasks.add_task(NotionService.sync_with_amo, True)
-    return 'Процесс обновления запущен.'
+    return 'Процесс полного обновления запущен.'
 
 
 @router.get(
