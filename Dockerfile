@@ -11,6 +11,7 @@ poetry config virtualenvs.create false
 COPY pyproject.toml .
 COPY poetry.lock .
 COPY app/ app/
+COPY .env .
 
 RUN poetry install --no-cache
 
