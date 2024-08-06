@@ -32,7 +32,7 @@ class NotionRepo:
     @classmethod
     def set_updated_at(cls, updated_at: datetime):
         set_key(
-            '../.env',
+            '.env',
             cls.updated_at_key,
             updated_at.strftime('%Y-%m-%dT%H:%M:%S.%f%Z'),
         )
