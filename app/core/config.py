@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     AMOCRM_ACCESS_TOKEN: str = ''
     AMOCRM_REFRESH_TOKEN: str = ''
 
+    # Notion secrets
+    NOTION_SECRET: str
+
     def save_amocrm_tokens(self, access_token: str, refresh_token: str):
         self.AMOCRM_ACCESS_TOKEN = access_token
         self.AMOCRM_REFRESH_TOKEN = refresh_token
