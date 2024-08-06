@@ -81,6 +81,12 @@ class AmoRepo:
                     print(f"Failed to add batch {i + 1}. Retrying...", n)
                     n += 1
 
+    @staticmethod
+    def chunk_list(data, chunk_size):
+        """Функция для разбиения списка на чанки по определённому размеру."""
+        for i in range(0, len(data), chunk_size):
+            yield data[i:i + chunk_size]
+
     @classmethod
     def patch_items(cls, items: list[Item]):
         if len(items) == 0:
@@ -99,13 +105,16 @@ class AmoRepo:
             }
             for item in items
         ]
-        response = requests.patch(
-            "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
-            headers=headers,
-            json=data
-        )
-        if response.status_code != 200:
-            print('Failed to delete elements from AMO:', response.text)
+        for i, batch in enumerate(cls.chunk_list(data, 50)):
+            response = requests.patch(
+                "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+                headers=headers,
+                json=batch
+            )
+            if response.status_code != 200:
+                print(f"Failed to update amo batch: {response.status_code} - {response.text}")
+            else:
+                print(f"Batch {i} updated successfully")
 
     @classmethod
     def get_all_products(cls) -> list[Item]:
