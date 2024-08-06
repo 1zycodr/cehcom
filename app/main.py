@@ -3,7 +3,10 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.events import EVENT_JOB_MISSED, EVENT_JOB_ERROR
+from fastapi_utilities import repeat_every
 
 from app.core import settings
 from app.core.middleware import catch_exceptions_middleware
@@ -31,16 +34,12 @@ app.include_router(v1_router, prefix=settings.API_V1_STR)
 if settings.ENVIRONMENT != settings.Environment.local.value:
     app.middleware('http')(catch_exceptions_middleware)
 
-scheduler = BackgroundScheduler()
-scheduler.start()
 
-scheduler.add_job(
-    sync_notion_amo,
-    trigger=IntervalTrigger(minutes=1),
-    id='sync_notion_amo',
-    replace_existing=False,
-    max_instances=1,
-)
+@app.on_event('startup')
+@repeat_every(seconds=60)
+async def print_hello():
+    sync_notion_amo()
+
 
 if __name__ == "__main__":
 

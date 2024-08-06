@@ -16,6 +16,7 @@ errors = {git = "https://bitbucket.org/danametrics/errors", rev = "v1.0.26"}
 requests = "^2.32.3"
 notion-client = "^2.2.1"
 apscheduler = "^3.10.4"
+fastapi-utilities = "^0.2.0"
 
 
 [build-system]
