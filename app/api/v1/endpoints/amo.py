@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Body, BackgroundTasks
+from fastapi import APIRouter, Body, BackgroundTasks, Request
 
 from app.core.config import red
 from app.services import NotionService
@@ -46,8 +46,17 @@ def sync_catalog_updated(background_tasks: BackgroundTasks):
     '/lead-update',
     description='Хук для обновления сделок в amoCRM',
 )
-def lead_update(
-        payload: Any = Body(None),
-):
-    print(payload)
-    return 'ok'
+async def process_data(request: Request):
+    # Получение тела запроса в виде байтов
+    body_bytes = await request.body()
+
+    # Преобразование байтов в строку для печати
+    body_str = body_bytes.decode('utf-8')
+
+    # Печать тела запроса
+    print("Request body:", body_str)
+
+    # Вы также можете получить тело запроса как JSON
+    json_payload = await request.json()
+
+    return {"received_data": json_payload}
