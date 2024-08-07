@@ -37,8 +37,7 @@ async def catch_exceptions_middleware(request: Request, call_next) -> Response:
         {
             'type': 'mw-request',
             'req': {'method': request.method,
-                    'url': str(request.url),
-                    'body': await request.body()},
+                    'url': str(request.url)},
             'res': {'response': response_body},
             'time': str(end_time - start_time),
         },
