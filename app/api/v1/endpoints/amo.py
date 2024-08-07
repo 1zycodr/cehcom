@@ -40,3 +40,14 @@ def sync_catalog_updated(background_tasks: BackgroundTasks):
     red.set('sync-running', '1')
     background_tasks.add_task(NotionService.sync_with_amo)
     return 'Процесс обновления запущен.'
+
+
+@router.post(
+    '/lead-update',
+    description='Хук для обновления сделок в amoCRM',
+)
+def lead_update(
+        payload: Any = Body(None),
+):
+    print(payload)
+    return 'ok'
