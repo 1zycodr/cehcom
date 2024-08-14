@@ -1,8 +1,9 @@
-from time import sleep
-
+from app.core.logger import get_logger
 from app.services import NotionService
+
+log = get_logger()
 
 
 def sync_notion_amo():
-    print('start job')
+    log.warn('start job sync_notion_amo')
     NotionService.sync_with_amo()

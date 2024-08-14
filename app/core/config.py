@@ -11,7 +11,7 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
-red: Redis = redis.Redis(host='redis', port=6379, db=0)
+red: Redis = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 
 class Settings(BaseSettings):

@@ -14,7 +14,7 @@ class AmoRepo:
     @classmethod
     def get_product_by_nid(cls, nid: str) -> Item | None:
         time.sleep(.2)
-        url = '/api/v4/catalogs/9035/elements'
+        url = '/api/v4/catalogs/12367/elements'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
         headers = {
             "Authorization": access_token,
@@ -52,7 +52,7 @@ class AmoRepo:
     def add_products(cls, items: list[Item]):
         if len(items) == 0:
             return
-        url = '/api/v4/catalogs/9035/elements'
+        url = '/api/v4/catalogs/12367/elements'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
         headers = {
             "Authorization": access_token,
@@ -91,7 +91,7 @@ class AmoRepo:
     def patch_items(cls, items: list[Item]):
         if len(items) == 0:
             return
-        url = f'/api/v4/catalogs/9035/elements'
+        url = f'/api/v4/catalogs/12367/elements'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
         headers = {
             "Authorization": access_token,
@@ -119,7 +119,7 @@ class AmoRepo:
     @classmethod
     def get_all_products(cls) -> list[Item]:
         time.sleep(.2)
-        url = '/api/v4/catalogs/9035/elements'
+        url = '/api/v4/catalogs/12367/elements'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
         headers = {
             "Authorization": access_token,

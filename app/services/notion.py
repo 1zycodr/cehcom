@@ -69,9 +69,6 @@ class NotionService:
         items_for_update_status_off = []
 
         for i, item in enumerate(items):
-            # print('Processing', i)
-            # amo_item = cls.amo_repo.get_product_by_nid(item.nid)
-            # if amo_item is None:
             if item.nid not in amo_items_ids:
                 if item.catalog_status != ItemStatus.delete:
                     items_for_create.append(deepcopy(item))
