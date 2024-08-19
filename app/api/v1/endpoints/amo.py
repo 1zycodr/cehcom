@@ -3,7 +3,8 @@ from typing import Any
 from fastapi import APIRouter, Body, BackgroundTasks, Request
 
 from app.core.config import red
-from app.schemas import LeadAddItemRequest
+from app.repository.amocrm import AmoRepo
+from app.schemas import LeadAddItemRequest, AMODTProduct
 from app.services import NotionService
 
 router = APIRouter()
@@ -70,4 +71,8 @@ async def process_data(request: Request):
 def lead_add_item(
         body: LeadAddItemRequest,
 ):
-    print('Request body:', body, str(body))
+    bt_item = AmoRepo.get_product_by_nid(body.item_nid)
+    dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id))
+    dt_item = AmoRepo.add_dt_product(dt_item)
+    AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id)
+    return 'ok'

@@ -1,8 +1,68 @@
 from __future__ import annotations
 from datetime import datetime, timezone
+
 from pydantic import BaseModel, model_validator
 
 from .notion import Item, ItemStatus
+
+
+class AMODTProduct(BaseModel):
+    id: int = 0
+    name: str = ''
+    description: str = ''
+    custom_fields_values: list[dict]
+
+    @classmethod
+    def from_item(cls, item: Item, bt_item_id: int) -> AMODTProduct:
+        custom_fields = [
+            {
+                'field_id': 1450211,
+                'values': [
+                    {'value': item.clear_title},
+                ],
+            },
+            {
+                'field_id': 1110357,
+                'values': [
+                    {'value': item.main_price},
+                ],
+            },
+            {
+                'field_id': 1110355,
+                'values': [
+                    {'value': item.description},
+                ],
+            },
+            {
+                'field_id': 1447011,
+                'values': [
+                    {'value': item.sizes},
+                ],
+            },
+            {
+                'field_id': 1110353,
+                'values': [
+                    {'value': item.article},
+                ],
+            },
+            {
+                'field_id': 1450213,
+                'values': [
+                    {
+                        'value': {
+                            'entity_id': bt_item_id,
+                            'entity_type': 'catalog_elements',
+                            "catalog_id": 12367,
+                        },
+                    },
+                ],
+            }
+        ]
+        return cls(
+            name=item.title,
+            description=item.description,
+            custom_fields_values=custom_fields,
+        )
 
 
 class AMOProduct(BaseModel):
@@ -14,7 +74,7 @@ class AMOProduct(BaseModel):
     @model_validator(mode='before')
     def extract_fields(self: dict, *args, **kwargs) -> dict:
         for field in self.get('custom_fields_values', []):
-            if field['field_id'] == 1110355:
+            if field['field_id'] == 1450155:
                 self['description'] = field['values'][0]['value']
         self['id'] = str(self.get('id', ''))
         return self

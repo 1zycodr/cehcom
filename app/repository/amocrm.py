@@ -6,7 +6,7 @@ from itertools import islice
 from time import sleep
 
 from app.core import settings
-from app.schemas import Item, AMOProduct
+from app.schemas import Item, AMOProduct, AMODTProduct
 
 
 class AmoRepo:
@@ -158,3 +158,73 @@ class AmoRepo:
             page += 1
             time.sleep(0.2)
         return items
+
+    @classmethod
+    def attach_item_to_lead(cls, lead_id: int, item_id: int):
+        time.sleep(.2)
+        url = f'/api/v4/leads/{lead_id}/link'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+        data = [
+            {
+                "to_entity_id": item_id,
+                "to_entity_type": "catalog_elements",
+                "metadata": {
+                    "catalog_id": 9035,
+                    "quantity": 1,
+                }
+            }
+        ]
+        response = requests.post(
+            "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+            headers=headers,
+            json=data,
+        )
+        if response.status_code == 200:
+            print("Item attached to lead successfully!", lead_id, item_id)
+        else:
+            print("Failed to attach item to lead", lead_id, item_id)
+
+    @classmethod
+    def get_lead_by_id(cls, lead_id: int):
+        time.sleep(.2)
+        url = f'/api/v4/leads/{lead_id}'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+        params = {
+            'with': 'catalog_elements'
+        }
+        response = requests.get("https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url), headers=headers, params=params)
+        print(response.json())
+
+    @classmethod
+    def add_dt_product(cls, item: AMODTProduct) -> AMODTProduct | None:
+        time.sleep(.2)
+        url = '/api/v4/catalogs/9035/elements'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+        n = 1
+        while n != 6:
+            sleep(0.2)
+            response = requests.post(
+                "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+                headers=headers,
+                json=[item.model_dump()],
+            )
+            if response.status_code == 200:
+                item.id = response.json()['_embedded']['elements'][0]['id']
+                print(f"Item created successfully!")
+                return item
+            else:
+                sleep(1)
+                print(f"Failed to create item", n)
+                n += 1
