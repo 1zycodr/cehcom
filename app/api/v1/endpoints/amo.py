@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import APIRouter, Body, BackgroundTasks, Request
 
 from app.core.config import red
+from app.schemas import LeadAddItemRequest
 from app.services import NotionService
 
 router = APIRouter()
@@ -60,3 +61,13 @@ async def process_data(request: Request):
     json_payload = await request.json()
 
     return {"received_data": json_payload}
+
+
+@router.post(
+    '/lead-add-item',
+    description='Хук для добавления товара к сделке в amoCRM',
+)
+def lead_add_item(
+        body: LeadAddItemRequest,
+):
+    print('Request body:', body, str(body))

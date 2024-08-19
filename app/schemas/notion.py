@@ -17,6 +17,7 @@ class Item(BaseModel):
     id: str = ''  # notion_id
     nid: str = ''  # NID
     title: str = ''  # Название формула
+    clear_title: str = ''  # Название формула без артикула
     this_is_set: bool = False  # This is set
     article: str = ''  # Артикул
     variants: str = ''  # Вариации
@@ -47,6 +48,7 @@ class Item(BaseModel):
         result['id'] = cls.getter(resp, 'id')
         result['nid'] = cls.getter(props, 'NID', 'formula', 'string')
         result['title'] = cls.getter(props, 'Название формула', 'formula', 'string')
+        result['clear_title'] = cls.getter(props, 'Название без артикула формула', 'formula', 'string')
         result['this_is_set'] = cls.getter(props, 'This is set', 'formula', 'boolean')
         result['article'] = cls.getter(props, 'Артикул', 'formula', 'string')
         result['variants'] = cls.getter(props, 'Вариации', 'formula', 'string')

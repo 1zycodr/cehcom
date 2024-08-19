@@ -67,6 +67,7 @@ class AMOProduct(BaseModel):
             last_edited_by=get_custom_field_value(1450189),  # Last edited by
             created_by=get_custom_field_value(1450191),  # Created by
             price_formula=get_custom_field_value(1450151),  # price formula
+            clear_title=get_custom_field_value(1450205),
         )
 
     @classmethod
@@ -227,6 +228,12 @@ class AMOProduct(BaseModel):
                     {'value': item.price_formula},
                 ],
             },
+            {
+                'field_id': 1450205,
+                'values': [
+                    {'value': item.clear_title},
+                ],
+            }
         ]
         return cls(
             id=item.amo_id,
