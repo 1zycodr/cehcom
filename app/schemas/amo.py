@@ -13,12 +13,42 @@ class AMODTProduct(BaseModel):
     custom_fields_values: list[dict]
 
     @classmethod
-    def from_item(cls, item: Item, bt_item_id: int) -> AMODTProduct:
+    def from_item(cls, item: Item, bt_item_id: int, lead_id: int) -> AMODTProduct:
         custom_fields = [
             {
-                'field_id': 1450211,
+                'field_id': 1450227,
                 'values': [
-                    {'value': item.clear_title},
+                    {'value': item.photo_all},
+                ],
+            },
+            {
+                'field_id': 1450217,
+                'values': [
+                    {'value': str(bt_item_id)},
+                ],
+            },
+            {
+                'field_id': 1450219,
+                'values': [
+                    {'value': item.nid},
+                ],
+            },
+            {
+                'field_id': 1450229,
+                'values': [
+                    {'value': item.admin_link},
+                ],
+            },
+            {
+                'field_id': 1450231,
+                'values': [
+                    {'value': item.client_link},
+                ],
+            },
+            {
+                'field_id': 1450221,
+                'values': [
+                    {'value': item.id},
                 ],
             },
             {
@@ -46,6 +76,12 @@ class AMODTProduct(BaseModel):
                 ],
             },
             {
+                'field_id': 1450239,
+                'values': [
+                    {'value': str(lead_id)},
+                ],
+            },
+            {
                 'field_id': 1450213,
                 'values': [
                     {
@@ -59,7 +95,7 @@ class AMODTProduct(BaseModel):
             }
         ]
         return cls(
-            name=item.title,
+            name=item.clear_title,
             description=item.description,
             custom_fields_values=custom_fields,
         )

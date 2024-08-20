@@ -73,7 +73,7 @@ def lead_add_item(
 ):
     print(body)
     bt_item = AmoRepo.get_product_by_nid(body.item_nid)
-    dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id))
+    dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id), body.lead_id)
     dt_item = AmoRepo.add_dt_product(dt_item)
     AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id)
     return 'ok'
