@@ -71,6 +71,7 @@ async def process_data(request: Request):
 def lead_add_item(
         body: LeadAddItemRequest,
 ):
+    print(body)
     bt_item = AmoRepo.get_product_by_nid(body.item_nid)
     dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id))
     dt_item = AmoRepo.add_dt_product(dt_item)
