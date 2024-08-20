@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, model_validator
 
+from .api import LeadAddItemRequest
 from .notion import Item, ItemStatus
 
 
@@ -13,7 +14,7 @@ class AMODTProduct(BaseModel):
     custom_fields_values: list[dict]
 
     @classmethod
-    def from_item(cls, item: Item, bt_item_id: int, lead_id: int) -> AMODTProduct:
+    def from_item(cls, item: Item, bt_item_id: int, body: LeadAddItemRequest) -> AMODTProduct:
         custom_fields = [
             {
                 'field_id': 1450227,
@@ -54,19 +55,19 @@ class AMODTProduct(BaseModel):
             {
                 'field_id': 1110357,
                 'values': [
-                    {'value': item.main_price},
+                    {'value': int(body.price)},
                 ],
             },
             {
                 'field_id': 1110355,
                 'values': [
-                    {'value': item.description},
+                    {'value': body.description},
                 ],
             },
             {
                 'field_id': 1447011,
                 'values': [
-                    {'value': item.sizes},
+                    {'value': body.size},
                 ],
             },
             {
@@ -78,7 +79,19 @@ class AMODTProduct(BaseModel):
             {
                 'field_id': 1450239,
                 'values': [
-                    {'value': str(lead_id)},
+                    {'value': str(body.lead_id)},
+                ],
+            },
+            {
+                'field_id': 1110361,
+                'values': [
+                    {'value': item.this_is_set},
+                ],
+            },
+            {
+                'field_id': 1450249,
+                'values': [
+                    {'value': f'https://ceh.amocrm.ru/catalogs/12367/detail/{bt_item_id}'},
                 ],
             },
             {
@@ -88,15 +101,15 @@ class AMODTProduct(BaseModel):
                         'value': {
                             'entity_id': bt_item_id,
                             'entity_type': 'catalog_elements',
-                            "catalog_id": 12367,
+                            'catalog_id': 12367,
                         },
                     },
                 ],
             }
         ]
         return cls(
-            name=item.clear_title,
-            description=item.description,
+            name=body.name,
+            description=body.description,
             custom_fields_values=custom_fields,
         )
 

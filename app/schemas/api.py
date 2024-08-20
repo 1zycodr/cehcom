@@ -8,3 +8,4 @@ class LeadAddItemRequest(BaseModel):
     size: str
     price: str
     quantity: str
+    description: str

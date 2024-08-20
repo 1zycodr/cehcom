@@ -160,7 +160,7 @@ class AmoRepo:
         return items
 
     @classmethod
-    def attach_item_to_lead(cls, lead_id: int, item_id: int):
+    def attach_item_to_lead(cls, lead_id: int, item_id: int, quantity: int = None):
         time.sleep(.2)
         url = f'/api/v4/leads/{lead_id}/link'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
@@ -174,10 +174,11 @@ class AmoRepo:
                 "to_entity_type": "catalog_elements",
                 "metadata": {
                     "catalog_id": 9035,
-                    "quantity": 1,
                 }
             }
         ]
+        if quantity is not None:
+            data[0]['metadata']['quantity'] = float(quantity)
         response = requests.post(
             "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
             headers=headers,
