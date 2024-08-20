@@ -61,7 +61,7 @@ class AMODTProduct(BaseModel):
             {
                 'field_id': 1110355,
                 'values': [
-                    {'value': body.description},
+                    {'value': item.description},
                 ],
             },
             {
