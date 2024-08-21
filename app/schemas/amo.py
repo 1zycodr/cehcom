@@ -89,6 +89,12 @@ class AMODTProduct(BaseModel):
                 ],
             },
             {
+                'field_id': 1110365,
+                'values': [
+                    {'value': body.uom},
+                ],
+            },
+            {
                 'field_id': 1450249,
                 'values': [
                     {'value': f'https://ceh.amocrm.ru/catalogs/12367/detail/{bt_item_id}'},

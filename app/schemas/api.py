@@ -9,3 +9,4 @@ class LeadAddItemRequest(BaseModel):
     price: str
     quantity: str
     description: str
+    uom: str
