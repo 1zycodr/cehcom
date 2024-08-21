@@ -9,6 +9,7 @@ from app.core.config import red
 from app.core.middleware import catch_exceptions_middleware
 from app.job.sync import sync_notion_amo
 from app.api.v1.router import api_router as v1_router
+from app.repository.tgbot import Alert
 from app.services import NotionService
 
 app = FastAPI(
@@ -40,6 +41,11 @@ def sync():
         return
     red.set('sync-running', '1')
     sync_notion_amo()
+
+
+@app.on_event('shutdown')
+def shutdown():
+    Alert.critical('`🛑 Сервер остановлен.`')
 
 
 if __name__ == "__main__":

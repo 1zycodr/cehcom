@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, BackgroundTasks, Request
 
 from app.core.config import red
 from app.repository.amocrm import AmoRepo
+from app.repository.tgbot import Alert
 from app.schemas import LeadAddItemRequest, AMODTProduct
 from app.services import NotionService
 
@@ -71,11 +72,16 @@ async def process_data(request: Request):
 def lead_add_item(
         body: LeadAddItemRequest,
 ):
-    bt_item = AmoRepo.get_product_by_nid(body.item_nid)
-    dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id), body)
-    dt_item = AmoRepo.add_dt_product(dt_item)
-    AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id)
-    AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, int(body.quantity))
+    success = True
+    try:
+        bt_item = AmoRepo.get_product_by_nid(body.item_nid)
+        dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id), body)
+        dt_item = AmoRepo.add_dt_product(dt_item)
+        AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id)
+        AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, int(body.quantity))
+    except Exception as ex:
+        success = False
+        Alert.critical(f'⛔️ Добавление товара: ошибка\nNID: `{body.item_nid}`\n[Сделка:](https://ceh.amocrm.ru/leads/detail/{body.lead_id}) `{body.lead_id}`\n\n{ex}')
     return {
-        'success': True,
+        'success': success,
     }

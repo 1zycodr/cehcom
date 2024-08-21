@@ -18,6 +18,7 @@ notion-client = "^2.2.1"
 fastapi-utilities = "^0.2.0"
 pytz = "^2024.1"
 redis = "^5.0.8"
+pytelegrambotapi = "^4.22.1"
 
 
 [build-system]

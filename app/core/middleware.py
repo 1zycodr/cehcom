@@ -10,6 +10,7 @@ from starlette.responses import Response
 from errors import error_handler, ServiceError
 
 from app.core.logger import get_logger
+from app.repository.tgbot import Alert
 
 logger = get_logger()
 
@@ -25,6 +26,7 @@ async def catch_exceptions_middleware(request: Request, call_next) -> Response:
             body = binary.decode()
             raise ServiceError(9999, f'Framework error occurred: {json.loads(body).get("detail")}')
     except Exception as ex:
+        Alert.critical(f'`❌ Ошибка во время обработки запроса:\n\n{ex}`')
         response_schema = error_handler(ex)
         response = JSONResponse(jsonable_encoder(response_schema))
     end_time = datetime.now()

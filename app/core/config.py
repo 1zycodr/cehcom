@@ -11,8 +11,6 @@ from dotenv import load_dotenv, find_dotenv
 
 load_dotenv(find_dotenv())
 
-red: Redis = redis.Redis(host='redis', port=6379, db=0)
-
 
 class Settings(BaseSettings):
 
@@ -44,11 +42,12 @@ class Settings(BaseSettings):
     # Notion secrets
     NOTION_SECRET: str
 
-    def save_amocrm_tokens(self, access_token: str, refresh_token: str):
-        self.AMOCRM_ACCESS_TOKEN = access_token
-        self.AMOCRM_REFRESH_TOKEN = refresh_token
-        os.environ["AMOCRM_ACCESS_TOKEN"] = access_token
-        os.environ["AMOCRM_REFRESH_TOKEN"] = refresh_token
+    # Telegram
+    TG_TOKEN: str
+
+    # Redis
+    REDIS_HOST: str = 'redis'
 
 
 settings = Settings()
+red: Redis = redis.Redis(host=settings.REDIS_HOST, port=6379, db=0)

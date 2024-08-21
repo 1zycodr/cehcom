@@ -10,6 +10,7 @@ from app.schemas.notion import *
 from ..core.config import red
 from ..repository.amocrm import AmoRepo
 from ..repository.notion import NotionRepo
+from ..repository.tgbot import Alert
 
 
 class NotionService:
@@ -54,68 +55,73 @@ class NotionService:
 
     @classmethod
     def sync_with_amo(cls, update_all: bool = False):
-        print('start sync', update_all)
-        time_start = datetime.now(cls.timezone)
-        items = cls.load_updated_from_notion(update_all)
-        amo_items = cls.amo_repo.get_all_products()
-        amo_items_ids = {
-            amo_item.nid: amo_item
-            for amo_item in amo_items
-        }
+        try:
+            if update_all:
+                Alert.info('`🔄 Полная синхронизация каталога в amoCRM...`')
+            print('start sync', update_all)
+            time_start = datetime.now(cls.timezone)
+            items = cls.load_updated_from_notion(update_all)
+            amo_items = cls.amo_repo.get_all_products()
+            amo_items_ids = {
+                amo_item.nid: amo_item
+                for amo_item in amo_items
+            }
 
-        items_for_update = []
-        items_for_delete = []
-        items_for_create = []
-        items_for_update_status_off = []
+            items_for_update = []
+            items_for_delete = []
+            items_for_create = []
+            items_for_update_status_off = []
 
-        for i, item in enumerate(items):
-            if item.nid not in amo_items_ids:
-                if item.catalog_status != ItemStatus.delete:
-                    items_for_create.append(deepcopy(item))
+            for i, item in enumerate(items):
+                if item.nid not in amo_items_ids:
+                    if item.catalog_status != ItemStatus.delete:
+                        items_for_create.append(deepcopy(item))
+                    else:
+                        items_for_update_status_off.append(deepcopy(item))
+                    continue
+                amo_item = amo_items_ids[item.nid]
+                item.amo_id = amo_item.amo_id
+                if item.catalog_status == ItemStatus.delete:
+                    item.catalog_status = ItemStatus.off
+                    items_for_delete.append(deepcopy(item))
                 else:
-                    items_for_update_status_off.append(deepcopy(item))
-                continue
-            amo_item = amo_items_ids[item.nid]
-            item.amo_id = amo_item.amo_id
-            if item.catalog_status == ItemStatus.delete:
-                item.catalog_status = ItemStatus.off
-                items_for_delete.append(deepcopy(item))
-            else:
-                items_for_update.append(deepcopy(item))
+                    items_for_update.append(deepcopy(item))
 
-            # if item.catalog_status != ItemStatus.delete:
-            #     items_for_create.append(deepcopy(item))
-            # else:
-            #     items_for_update_status_off.append(deepcopy(item))
+                # if item.catalog_status != ItemStatus.delete:
+                #     items_for_create.append(deepcopy(item))
+                # else:
+                #     items_for_update_status_off.append(deepcopy(item))
 
-        # обработка тех которые надо удалить
-        cls.amo_repo.patch_items(items_for_delete)
-        items_for_update_status_off.extend(items_for_delete)
+            # обработка тех которые надо удалить
+            cls.amo_repo.patch_items(items_for_delete)
+            items_for_update_status_off.extend(items_for_delete)
 
-        # проставляем статусы "удалено" в notion
-        for item in items_for_update_status_off:
-            cls.notion_repo.set_deleted(item)
+            # проставляем статусы "удалено" в notion
+            for item in items_for_update_status_off:
+                cls.notion_repo.set_deleted(item)
 
-        # создание новых
-        cls.amo_repo.add_products(items_for_create)
+            # создание новых
+            cls.amo_repo.add_products(items_for_create)
 
-        # обновление старых
-        # сначала ищем связанные карточки в notion
-        items_for_update.extend(cls.enrich_updated_items(items, items_for_update))
-        cls.amo_repo.patch_items(items_for_update)
+            # обновление старых
+            # сначала ищем связанные карточки в notion
+            items_for_update.extend(cls.enrich_updated_items(items, items_for_update))
+            cls.amo_repo.patch_items(items_for_update)
 
-        # сохраняем время последнего обновления
-        time_finish = datetime.now(cls.timezone)
-        cls.notion_repo.set_updated_at(time_finish)
+            # сохраняем время последнего обновления
+            time_finish = datetime.now(cls.timezone)
+            cls.notion_repo.set_updated_at(time_finish)
 
-        print('Time elapsed:', time_finish - time_start)
-        print('Updated:', len(items_for_update))
-        print('Created:', len(items_for_create))
-        print('Deleted:', len(items_for_delete))
+            print('Time elapsed:', time_finish - time_start)
+            print('Updated:', len(items_for_update))
+            print('Created:', len(items_for_create))
+            print('Deleted:', len(items_for_delete))
 
-        red.delete('sync-running')
-
-        return
+            red.delete('sync-running')
+            if update_all:
+                Alert.info('`✅ Полная синхронизация каталога в amoCRM успешно завершена`')
+        except Exception as ex:
+            Alert.critical(f'`❌ Ошибка синхронизации с amoCRM:\n\n{ex}`')
 
     @classmethod
     def enrich_updated_items(cls, items: list[Item], updated_items: list[Item]) -> list[Item]:
