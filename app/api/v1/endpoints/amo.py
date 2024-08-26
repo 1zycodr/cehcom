@@ -1,3 +1,5 @@
+import urllib
+
 from typing import Any
 
 from fastapi import APIRouter, Body, BackgroundTasks, Request
@@ -58,11 +60,13 @@ async def process_data(request: Request):
 
     # Печать тела запроса
     print("Request body:", body_str)
+    # Преобразуем декодированную строку в словарь
+    decoded_data = urllib.parse.parse_qs(body_str)
 
-    # Вы также можете получить тело запроса как JSON
-    json_payload = await request.json()
+    # Преобразуем значения в списках в одиночные значения, если они не списки
+    result_dict = {k: v[0] if len(v) == 1 else v for k, v in decoded_data.items()}
 
-    return {"received_data": json_payload}
+    return result_dict
 
 
 @router.post(
@@ -77,7 +81,7 @@ def lead_add_item(
         bt_item = AmoRepo.get_product_by_nid(body.item_nid)
         dt_item = AMODTProduct.from_item(bt_item, int(bt_item.amo_id), body)
         dt_item = AmoRepo.add_dt_product(dt_item)
-        AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id)
+        AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, 1)
         AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, int(body.quantity))
     except Exception as ex:
         success = False
