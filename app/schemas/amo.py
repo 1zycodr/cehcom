@@ -19,7 +19,7 @@ class AMODTProduct(BaseModel):
             {
                 'field_id': 1450227,
                 'values': [
-                    {'value': item.photo_all},
+                    {'value': item.photo},
                 ],
             },
             {
