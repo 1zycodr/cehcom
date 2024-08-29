@@ -83,6 +83,7 @@ def lead_add_item(
         dt_item = AmoRepo.add_dt_product(dt_item)
         AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, 1)
         AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, int(body.quantity))
+        AmoRepo.attach_item_to_lead(body.lead_id, dt_item.id, int(body.quantity))
     except Exception as ex:
         success = False
         Alert.critical(f'⛔️ Добавление товара: ошибка\nNID: `{body.item_nid}`\n[Сделка:](https://ceh.amocrm.ru/leads/detail/{body.lead_id}) `{body.lead_id}`\n\n{ex}')
