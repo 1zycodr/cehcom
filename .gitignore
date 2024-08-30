@@ -5,7 +5,7 @@ env
 nginx
 renew.sh
 restart.sh
-vol/*
+vol
 static
 media
 certbot
