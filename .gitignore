@@ -4,6 +4,8 @@ env
 .venv
 nginx
 renew.sh
+restart.sh
+vol/*
 static
 media
 certbot
