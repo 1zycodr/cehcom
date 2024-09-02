@@ -312,6 +312,11 @@ class Lead(BaseModel):
                     },
                 ] if self.company_uid() else [],
             },
+            'Статус сделки': {
+                'status': {
+                    'name': self.p_status(),
+                } if self.p_status() else None,
+            },
         }
         if date_start == '' and date_end != '':
             result.pop('Дедлайн')
