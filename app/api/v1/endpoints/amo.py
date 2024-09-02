@@ -4,11 +4,13 @@ from typing import Any
 
 from fastapi import APIRouter, Body, BackgroundTasks, Request
 
+from app.core import get_db
 from app.core.config import red
 from app.repository.amocrm import AmoRepo
 from app.repository.tgbot import Alert
 from app.schemas import LeadAddItemRequest, AMODTProduct
-from app.services import NotionService
+from app.schemas.lead import parse_lead_update
+from app.services import NotionService, AMOService
 
 router = APIRouter()
 
@@ -52,21 +54,14 @@ def sync_catalog_updated(background_tasks: BackgroundTasks):
     description='Хук для обновления сделок в amoCRM',
 )
 async def process_data(request: Request):
-    # Получение тела запроса в виде байтов
     body_bytes = await request.body()
-
-    # Преобразование байтов в строку для печати
     body_str = body_bytes.decode('utf-8')
-
-    # Печать тела запроса
-    print("Request body:", body_str)
-    # Преобразуем декодированную строку в словарь
     decoded_data = urllib.parse.parse_qs(body_str)
-
-    # Преобразуем значения в списках в одиночные значения, если они не списки
-    result_dict = {k: v[0] if len(v) == 1 else v for k, v in decoded_data.items()}
-
-    return result_dict
+    lead = parse_lead_update(decoded_data)
+    if lead is not None:
+        db = next(get_db())
+        AMOService(db).process_lead_update_hook(lead)
+    return lead
 
 
 @router.post(

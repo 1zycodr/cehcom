@@ -10,7 +10,6 @@ from app.core.middleware import catch_exceptions_middleware
 from app.job.sync import sync_notion_amo
 from app.api.v1.router import api_router as v1_router
 from app.repository.tgbot import Alert
-from app.services import NotionService
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

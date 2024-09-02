@@ -6,11 +6,13 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
+from app.schemas.lead import Lead
 from app.schemas.notion import *
 
 
 class NotionRepo:
     items_db_id = 'f59c2429df1749979ea76509fcfcdb8c'
+    lead_db_id = '5824aff3f4374a3787a37e5caa12d8e1'
     updated_at_key = 'LAST_UPDATED_AT'
     timezone = pytz.timezone('Asia/Almaty')
 
@@ -73,4 +75,20 @@ class NotionRepo:
                     'status': {'name': ItemStatus.off},
                 },
             },
+        )
+
+    @classmethod
+    def add_lead(cls, lead: Lead) -> str:
+        result = cls.client.pages.create(
+            parent={'database_id': cls.lead_db_id},
+            icon={'external': {'url': 'https://www.notion.so/icons/timeline_lightgray.svg'}, 'type': 'external'},
+            properties=lead.to_notion(),
+        )
+        return result['id']
+
+    @classmethod
+    def update_lead(cls, lead: Lead, uid: str):
+        cls.client.pages.update(
+            page_id=uid,
+            properties=lead.to_notion_update(),
         )

@@ -3,7 +3,6 @@ from copy import deepcopy
 import pytz
 from notion_client import Client
 from datetime import datetime
-from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
 from app.schemas.notion import *
@@ -37,14 +36,6 @@ class NotionService:
                         "on_or_after": updated_at,
                     },
                 },
-                # {
-                #     "property": "NID",
-                #     "formula": {
-                #         "string": {
-                #             "equals": "02020",
-                #         },
-                #     },
-                # },
             ],
         }
         time_start = datetime.now(cls.timezone)
