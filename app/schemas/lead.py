@@ -317,6 +317,9 @@ class Lead(BaseModel):
                     'name': self.p_status(),
                 } if self.p_status() else None,
             },
+            'Бюджет общий': {
+                'number': self.price,
+            }
         }
         if date_start == '' and date_end != '':
             result.pop('Дедлайн')
