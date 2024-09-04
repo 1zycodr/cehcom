@@ -235,6 +235,15 @@ class Lead(BaseModel):
     def to_notion_update(self) -> dict:
         date_start, date_end = self.deadline()
         result = {
+            'Name': {
+                'title': [
+                    {
+                        'text': {
+                            'content': self.name,
+                        }
+                    },
+                ],
+            },
             'Описание заказа': {
                 'rich_text': [
                     {
