@@ -78,6 +78,23 @@ class NotionRepo:
         )
 
     @classmethod
+    def get_template(cls) -> str | None:
+        resp = cls.client.databases.query(
+            database_id=cls.lead_db_id,
+            filter={
+                'property': 'Статус сделки',
+                'status': {
+                    'equals': 'Черновик'
+                }
+            },
+            page_size=1
+        )
+        try:
+            return resp.get('results', [{'id': None}])[0].get('id')
+        except IndexError:
+            return None
+
+    @classmethod
     def add_lead(cls, lead: Lead) -> str:
         result = cls.client.pages.create(
             parent={'database_id': cls.lead_db_id},

@@ -10,7 +10,7 @@ class Lead(BaseModel):
     name: str = ''
     status_id: int
     old_status_id: int | None = None
-    price: int
+    price: int = 0
     responsible_user_id: str
     last_modified: str
     modified_user_id: str
