@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from __future__ import annotations
 
+from datetime import datetime, timezone
 from pydantic import BaseModel
 
 from app.repository.tgbot import Alert
@@ -328,7 +329,10 @@ class Lead(BaseModel):
             },
             'Бюджет общий': {
                 'number': self.price,
-            }
+            },
+            'ID сделки amoCRM': {
+                'number': self.id,
+            },
         }
         if date_start == '' and date_end != '':
             result.pop('Дедлайн')
