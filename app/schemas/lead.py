@@ -1,9 +1,54 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from app.repository.tgbot import Alert
+
+
+class NotionLead(BaseModel):
+    id: str
+    notion_lead_id: str
+
+    @model_validator(mode='before')
+    def extract_fields(self: dict, *args, **kwargs) -> dict:
+        self['id'] = str(self.get('id', ''))
+        self['notion_lead_id'] = str(self.get('properties', {})
+                                     .get('ID заказа в Notion', {})
+                                     .get('unique_id', {})
+                                     .get('number', 0))
+        return self
+
+    def to_amo_update(self, lead_id: int) -> dict:
+        return {
+            'id': lead_id,
+            'custom_fields_values': [
+                {
+                    'field_id': 1450043,
+                    'values': [
+                        {
+                            'value': self.id,
+                        },
+                    ],
+                },
+                {
+                    'field_id': 1449773,
+                    'values': [
+                        {
+                            'value': f'https://www.notion.so/cehcom/{self.id.replace('-', '')}',
+                        },
+                    ],
+                },
+                {
+                    'field_id': 1450275,
+                    'values': [
+                        {
+                            'value': f"LP-{self.notion_lead_id}",
+                        },
+                    ],
+                },
+            ],
+        }
 
 
 class Lead(BaseModel):

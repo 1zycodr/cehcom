@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
-from app.schemas.lead import Lead, LeadUpdate
+from app.schemas.lead import Lead, LeadUpdate, NotionLead
 from app.schemas.notion import *
 
 
@@ -126,12 +126,12 @@ class NotionRepo:
         return result['id']
 
     @classmethod
-    def update_lead(cls, lead: Lead, uid: str):
+    def update_lead(cls, lead: Lead, uid: str) -> NotionLead:
         print('Updating lead:', lead.id)
-        cls.client.pages.update(
+        return NotionLead(**cls.client.pages.update(
             page_id=uid,
             properties=lead.to_notion_update(),
-        )
+        ))
 
     @classmethod
     def get_leads(cls, filter: dict) -> list[LeadUpdate]:

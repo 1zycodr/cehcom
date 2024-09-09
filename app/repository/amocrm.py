@@ -232,6 +232,26 @@ class AmoRepo:
                 n += 1
 
     @classmethod
+    def update_lead_fields(cls, lead_id: int, fields: dict):
+        time.sleep(.2)
+        url = f'/api/v4/leads/{lead_id}'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+
+        response = requests.patch(
+            "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+            headers=headers,
+            json=fields,
+        )
+        if response.status_code == 200:
+            print(f"Lead {lead_id} updated successfully!")
+        else:
+            print(f"Failed to update lead {lead_id}: {response.status_code} - {response.text}")
+
+    @classmethod
     def update_leads(cls, leads: list[LeadUpdate]):
         if len(leads) == 0:
             return

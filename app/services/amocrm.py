@@ -1,4 +1,5 @@
 from app.crud.schemas import LeadCreate
+from app.repository.amocrm import AmoRepo
 from app.repository.notion import NotionRepo
 from app.repository.tgbot import Alert
 from app.crud import lead as lead_crud
@@ -27,8 +28,9 @@ class AMOService:
                     Alert.critical('`🛑 Создайте черновики лидов.`')
                     return
                 else:
-                    NotionRepo.update_lead(lead, uid)
+                    notion_item = NotionRepo.update_lead(lead, uid)
                 lead_crud.create(self.db, LeadCreate(amo_id=lead.id, notion_uid=uid, data_hash=lead.hash()))
+                AmoRepo.update_lead_fields(lead.id, notion_item.to_amo_update(lead.id))
             elif lead.hash() != db_lead.data_hash:
-                NotionRepo.update_lead(lead, db_lead.notion_uid)
                 lead_crud.update_hash(self.db, db_lead.id, lead.hash())
+                NotionRepo.update_lead(lead, db_lead.notion_uid)

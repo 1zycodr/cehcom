@@ -2,10 +2,11 @@ import urllib
 
 from typing import Any
 
-from fastapi import APIRouter, Body, BackgroundTasks, Request
+from fastapi import APIRouter, Body, BackgroundTasks, Request, Depends
 
 from app.core import get_db
 from app.core.config import red
+from app.core.db import SessionLocal
 from app.repository.amocrm import AmoRepo
 from app.repository.tgbot import Alert
 from app.schemas import LeadAddItemRequest, AMODTProduct
@@ -65,13 +66,12 @@ def sync_catalog_updated(background_tasks: BackgroundTasks):
     '/lead-update',
     description='Хук для обновления сделок в amoCRM',
 )
-async def process_data(request: Request):
+async def process_data(request: Request, db: SessionLocal = Depends(get_db)):
     body_bytes = await request.body()
     body_str = body_bytes.decode('utf-8')
     decoded_data = urllib.parse.parse_qs(body_str)
     lead = parse_lead_update(decoded_data)
     if lead is not None:
-        db = next(get_db())
         AMOService(db).process_lead_update_hook(lead)
     return lead
 
