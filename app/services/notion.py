@@ -108,11 +108,11 @@ class NotionService:
             print('Created:', len(items_for_create))
             print('Deleted:', len(items_for_delete))
 
-            red.delete('sync-running')
             if update_all:
                 Alert.info('`✅ Полная синхронизация каталога в amoCRM успешно завершена`')
         except Exception as ex:
             Alert.critical(f'`❌ Ошибка синхронизации каталога с amoCRM:\n\n{ex}`')
+        red.delete('sync-running')
 
     @classmethod
     def sync_leads(cls, update_all: bool = False):
@@ -134,9 +134,9 @@ class NotionService:
             if update_all:
                 Alert.info_lead('`✅ Полная синхронизация лидов в amoCRM успешно завершена`')
 
-            red.delete('sync-leads-running')
         except Exception as ex:
             Alert.critical(f'`❌ Ошибка синхронизации лидов с amoCRM:\n\n{ex}`')
+        red.delete('sync-leads-running')
 
     @classmethod
     def enrich_updated_items(cls, items: list[Item], updated_items: list[Item]) -> list[Item]:
