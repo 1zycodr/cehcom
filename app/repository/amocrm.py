@@ -7,6 +7,7 @@ from time import sleep
 
 from app.core import settings
 from app.schemas import Item, AMOProduct, AMODTProduct
+from app.schemas.lead import LeadUpdate
 
 
 class AmoRepo:
@@ -229,3 +230,29 @@ class AmoRepo:
                 sleep(1)
                 print(f"Failed to create item", n)
                 n += 1
+
+    @classmethod
+    def update_leads(cls, leads: list[LeadUpdate]):
+        if len(leads) == 0:
+            return
+        time.sleep(.2)
+        url = f'/api/v4/leads'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+        data = [
+            lead.dict()
+            for lead in leads
+        ]
+        for i, batch in enumerate(cls.chunk_list(data, 50)):
+            response = requests.patch(
+                "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+                headers=headers,
+                json=batch,
+            )
+            if response.status_code != 200:
+                print(f"Failed to update amo batch: {response.status_code} - {response.text}")
+            else:
+                print(f"Batch {i} updated successfully")

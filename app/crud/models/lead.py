@@ -21,3 +21,7 @@ class Lead(CreatedAtMixin):
         String,
         nullable=True,
     )
+    data_hash = Column(
+        String,
+        nullable=False,
+    )

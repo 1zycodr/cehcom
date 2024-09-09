@@ -7,7 +7,7 @@ from fastapi_utilities import repeat_every
 from app.core import settings
 from app.core.config import red
 from app.core.middleware import catch_exceptions_middleware
-from app.job.sync import sync_notion_amo
+from app.job.sync import sync_notion_amo, sync_notion_leads
 from app.api.v1.router import api_router as v1_router
 from app.repository.tgbot import Alert
 
@@ -42,6 +42,16 @@ def sync():
     sync_notion_amo()
 
 
+@app.on_event('startup')
+@repeat_every(seconds=10, wait_first=True)
+def sync_leads():
+    if red.get('sync-leads-running') is not None:
+        print('sync leads already running')
+        return
+    red.set('sync-leads-running', '1')
+    sync_notion_leads()
+
+
 @app.on_event('shutdown')
 def shutdown():
     Alert.critical('`🛑 Сервер остановлен.`')
@@ -49,4 +59,5 @@ def shutdown():
 
 if __name__ == "__main__":
     red.delete('sync-running')
+    red.delete('sync-leads-running')
     uvicorn.run("app.main:app", host='0.0.0.0', port=8000)

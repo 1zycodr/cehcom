@@ -9,20 +9,11 @@ from app.repository.tgbot import Alert
 class Lead(BaseModel):
     id: int
     name: str = ''
-    status_id: int
-    old_status_id: int | None = None
     price: int = 0
-    responsible_user_id: str
-    last_modified: str
-    modified_user_id: str
-    created_user_id: str
-    date_create: str
-    pipeline_id: str
-    account_id: str
-    tags: dict = {}
     custom_fields: dict
-    created_at: str
-    updated_at: str
+
+    def hash(self) -> str:
+        return str(hash(str(self.dict())))
 
     def p_status(self) -> str | None:
         return self.custom_fields.get('1450271', {}).get('values', [{}])[0].get('value', None)
@@ -341,6 +332,79 @@ class Lead(BaseModel):
                 'date': None,
             }
         return result
+
+
+class LeadUpdate(BaseModel):
+    id: int
+    custom_fields_values: list[dict]
+
+    @classmethod
+    def from_notion_resp(cls, data: dict) -> LeadUpdate:
+        props = data['properties']
+        result = dict()
+        lead_id = props['ID сделки amoCRM']['number']
+        if lead_id is None:
+            lead_id = 0
+        result['id'] = lead_id
+        date_ready = props['Дата готово']['date']
+        if date_ready is not None:
+            date_ready = date_ready['start']
+            dt = datetime.strptime(
+                date_ready,
+                '%Y-%m-%d'
+            ).replace(
+                tzinfo=timezone.utc,
+            ).astimezone()
+            date_ready = (dt.strftime('%Y-%m-%dT%H:%M:%S%z')[:-2] + ':'
+                          + dt.strftime('%Y-%m-%dT%H:%M:%S%z')[-2:])
+        result['name'] = props['Name']['title'][0]['text']['content']
+        custom_fields = [
+            {
+                'field_id': 1450271,
+                'values': [
+                    {
+                        'value': props['Статус сделки']['status']['name'],
+                    },
+                ],
+            },
+            {
+                'field_id': 1407255,
+                'values': [
+                    {
+                        'value': props['Описание заказа']['rich_text'][0]['text']['content']
+                        if props['Описание заказа']['rich_text'] else '',
+                    },
+                ],
+            },
+            {
+                'field_id': 1448935,
+                'values': [
+                    {
+                        'value': props['Поступления']['number']
+                        if props['Поступления']['number'] else 0,
+                    },
+                ],
+            },
+            {
+                'field_id': 1449791,
+                'values': [
+                    {
+                        'value': props['Выплатили агенту']['number']
+                        if props['Выплатили агенту']['number'] else 0,
+                    },
+                ],
+            },
+            {
+                'field_id': 1449769,
+                'values': [
+                    {
+                        'value': date_ready,
+                    },
+                ] if date_ready else None,
+            },
+        ]
+        result['custom_fields_values'] = custom_fields
+        return LeadUpdate(**result)
 
 
 def build_nested_dict(flat_dict):

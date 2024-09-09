@@ -10,5 +10,13 @@ class CRUDLead(CRUDBase[Lead, LeadCreate, LeadUpdate]):
             self.model.amo_id == amo_id,
         ).first()
 
+    def update_hash(self, db, id: int, data_hash: str):
+        db.query(self.model).filter(
+            self.model.id == id,
+        ).update(
+            {'data_hash': data_hash},
+        )
+        db.commit()
+
 
 lead = CRUDLead(Lead)

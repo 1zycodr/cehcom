@@ -112,7 +112,31 @@ class NotionService:
             if update_all:
                 Alert.info('`✅ Полная синхронизация каталога в amoCRM успешно завершена`')
         except Exception as ex:
-            Alert.critical(f'`❌ Ошибка синхронизации с amoCRM:\n\n{ex}`')
+            Alert.critical(f'`❌ Ошибка синхронизации каталога с amoCRM:\n\n{ex}`')
+
+    @classmethod
+    def sync_leads(cls, update_all: bool = False):
+        try:
+            if update_all:
+                Alert.info_lead('`🔄 Полная синхронизация лидов в amoCRM...`')
+            print('start sync leads', update_all)
+            time_start = datetime.now(cls.timezone)
+
+            leads = cls.notion_repo.load_updated_leads(update_all)
+            filtered_items = [lead for lead in leads if lead.id != 0]
+
+            if len(filtered_items) != 0:
+                AmoRepo.update_leads(filtered_items)
+
+            time_finish = datetime.now(cls.timezone)
+            print('finish sync leads, time elapsed:', time_finish - time_start)
+
+            if update_all:
+                Alert.info_lead('`✅ Полная синхронизация лидов в amoCRM успешно завершена`')
+
+            red.delete('sync-leads-running')
+        except Exception as ex:
+            Alert.critical(f'`❌ Ошибка синхронизации лидов с amoCRM:\n\n{ex}`')
 
     @classmethod
     def enrich_updated_items(cls, items: list[Item], updated_items: list[Item]) -> list[Item]:

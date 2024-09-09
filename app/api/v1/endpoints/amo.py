@@ -26,6 +26,18 @@ def docs(
 
 
 @router.get(
+    '/sync-leads-full',
+    description='Принудительное обновление всех сделок с Notion -> AmoCRM',
+)
+def sync_leads_full(background_tasks: BackgroundTasks):
+    if red.get('sync-leads-running') is not None:
+        return 'Запрос проигнорирован. Процесс полного обновления лидов уже был запущен недавно.'
+    red.set('sync-leads-running', '1')
+    background_tasks.add_task(NotionService.sync_leads)
+    return 'Процесс обновления сделок запущен.'
+
+
+@router.get(
     '/sync-catalog-full',
     description='Принудительная синхронизация всего каталога с amoCRM',
 )
