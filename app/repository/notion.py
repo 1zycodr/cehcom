@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
+from app.schemas import AMODTProduct, NotionDTProduct
 from app.schemas.lead import Lead, LeadUpdate, NotionLead
 from app.schemas.notion import *
 
@@ -13,6 +14,7 @@ from app.schemas.notion import *
 class NotionRepo:
     items_db_id = 'f59c2429df1749979ea76509fcfcdb8c'
     lead_db_id = '5824aff3f4374a3787a37e5caa12d8e1'
+    lead_items_db_id = '89e1c3694d174952901a94d1aba0d083'
     updated_at_key = 'LAST_UPDATED_AT'
     lead_updated_at_key = 'LAST_UPDATED_AT_LEADS'
     timezone = pytz.timezone('Asia/Almaty')
@@ -100,7 +102,7 @@ class NotionRepo:
         )
 
     @classmethod
-    def get_template(cls) -> str | None:
+    def get_lead_template(cls) -> str | None:
         resp = cls.client.databases.query(
             database_id=cls.lead_db_id,
             filter={
@@ -176,3 +178,46 @@ class NotionRepo:
         print('Time elapsed:', datetime.now(cls.timezone) - time_start)
         cls.set_updated_at_leads(time_start)
         return leads
+
+    @classmethod
+    def update_lead_item(cls, item: AMODTProduct, uid: str, id: int, lead_id: str, lead_uid: str) -> NotionDTProduct:
+        data = cls.client.pages.update(
+            page_id=uid,
+            properties=item.to_notion_update(id, lead_id, lead_uid),
+        )
+        # if (url := item.get_photo()) is not None:
+        #     resp = cls.client.blocks.children.append(
+        #         block_id=uid,
+        #         children=[
+        #             {
+        #                 'type': 'image',
+        #                 'image': {
+        #                     'type': 'external',
+        #                     'external': {
+        #                         'url': url,
+        #                     },
+        #                 }
+        #             }
+        #         ]
+        #     )
+        #     print(resp)
+        return NotionDTProduct(**data)
+
+    @classmethod
+    def get_lead_item_template(cls) -> (str | None, int | None):
+        resp = cls.client.databases.query(
+            database_id=cls.lead_items_db_id,
+            filter={
+                'property': 'Статус',
+                'status': {
+                    'equals': 'Черновик'
+                }
+            },
+            page_size=1
+        )
+        try:
+            uid = resp.get('results', [{'id': None}])[0].get('id')
+            id = resp.get('results', [{}])[0].get('properties', {}).get('ID П-заказа', {}).get('unique_id', {}).get('number')
+            return uid, id
+        except IndexError:
+            return None, None

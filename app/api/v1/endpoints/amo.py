@@ -9,7 +9,7 @@ from app.core.config import red
 from app.core.db import SessionLocal
 from app.repository.amocrm import AmoRepo
 from app.repository.tgbot import Alert
-from app.schemas import LeadAddItemRequest, AMODTProduct
+from app.schemas import LeadAddItemRequest, AMODTProduct, LeadSyncItemsRequest, parse_dt_product_update
 from app.schemas.lead import parse_lead_update
 from app.services import NotionService, AMOService
 
@@ -66,14 +66,25 @@ def sync_catalog_updated(background_tasks: BackgroundTasks):
     '/lead-update',
     description='Хук для обновления сделок в amoCRM',
 )
-async def process_data(request: Request, db: SessionLocal = Depends(get_db)):
+async def process_data(
+        request: Request,
+        background_tasks: BackgroundTasks,
+):
     body_bytes = await request.body()
     body_str = body_bytes.decode('utf-8')
-    decoded_data = urllib.parse.parse_qs(body_str)
-    lead = parse_lead_update(decoded_data)
-    if lead is not None:
-        AMOService(db).process_lead_update_hook(lead)
-    return lead
+    decoded_data = urllib.parse.parse_qs(body_str)  # noqa
+    def process():
+        db = next(iter(get_db()))
+        try:
+            lead = parse_lead_update(decoded_data)
+            if lead is not None:
+                AMOService(db).process_lead_update_hook(lead)
+        finally:
+            db.close()
+    background_tasks.add_task(process)
+    return {
+        'success': True
+    }
 
 
 @router.post(
@@ -96,4 +107,43 @@ def lead_add_item(
         Alert.critical(f'⛔️ Добавление товара: ошибка\nNID: `{body.item_nid}`\n[Сделка:](https://ceh.amocrm.ru/leads/detail/{body.lead_id}) `{body.lead_id}`\n\n{ex}')
     return {
         'success': success,
+    }
+
+
+@router.post(
+    '/sync-lead-items',
+    description='Хук для синхронизации товаров сделки в amoCRM',
+)
+def lead_sync_items(
+        body: LeadSyncItemsRequest,
+        db: SessionLocal = Depends(get_db),
+):
+    success = True
+    try:
+        AMOService(db).sync_lead_items(body.lead_id)
+    except Exception as ex:
+        success = False
+        Alert.critical(f'⛔️Ошибка при синхронизация товаров сделки\n'
+                       f'[Сделка:](https://ceh.amocrm.ru/leads/detail/{body.lead_id})`'
+                       f'\n\n{ex}')
+    return {
+        'success': success,
+    }
+
+
+@router.post(
+    '/item-update',
+    description='Хук для обновления товара сделки в amoCRM',
+)
+async def process_data(request: Request, db: SessionLocal = Depends(get_db)):
+    body_bytes = await request.body()
+    body_str = body_bytes.decode('utf-8')
+    decoded_data = urllib.parse.parse_qs(body_str)  # noqa
+    added, updated = parse_dt_product_update(decoded_data)
+    try:
+        AMOService(db).process_dt_products_update(added, updated)
+    except Exception as ex:
+        Alert.critical(f'⛔️Ошибка при обновлении товаров сделки:\n\n{ex}')
+    return {
+        'success': True,
     }

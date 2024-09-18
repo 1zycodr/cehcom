@@ -10,3 +10,7 @@ class LeadAddItemRequest(BaseModel):
     quantity: str
     description: str
     uom: str
+
+
+class LeadSyncItemsRequest(BaseModel):
+    lead_id: int

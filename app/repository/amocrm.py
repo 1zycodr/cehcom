@@ -191,7 +191,7 @@ class AmoRepo:
             print("Failed to attach item to lead", lead_id, item_id)
 
     @classmethod
-    def get_lead_by_id(cls, lead_id: int):
+    def get_lead_items_ids(cls, lead_id: int) -> (list[(int, int)], str, str):
         time.sleep(.2)
         url = f'/api/v4/leads/{lead_id}'
         access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
@@ -202,8 +202,25 @@ class AmoRepo:
         params = {
             'with': 'catalog_elements'
         }
-        response = requests.get("https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url), headers=headers, params=params)
-        print(response.json())
+        response = requests.get("https://{}.amocrm.ru{}".format(
+            settings.AMOCRM_SUBDOMAIN, url,
+        ), headers=headers, params=params)
+        items = list()
+        lead_id = ''
+        lead_uid = ''
+        if response.status_code == 200:
+            data = response.json()
+            elems = data.get('_embedded', {}).get('catalog_elements', [])
+            for elem in elems:
+                items.append((elem['id'], elem['metadata']['quantity']))
+            for field in data['custom_fields_values']:
+                if field['field_id'] == 1450275:
+                    lead_id = field['values'][0]['value'][3:]
+                if field['field_id'] == 1450043:
+                    lead_uid = field['values'][0]['value']
+        else:
+            print(f"Failed to get lead items", response.status_code, response.text)
+        return items, lead_id, lead_uid
 
     @classmethod
     def add_dt_product(cls, item: AMODTProduct) -> AMODTProduct | None:
@@ -276,3 +293,22 @@ class AmoRepo:
                 print(f"Failed to update amo batch: {response.status_code} - {response.text}")
             else:
                 print(f"Batch {i} updated successfully")
+
+    @classmethod
+    def update_lead_item_after_creation(cls, item_id, fields: dict):
+        time.sleep(.2)
+        url = f'/api/v4/catalogs/9035/elements/{item_id}'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+        response = requests.patch(
+            "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+            headers=headers,
+            json=fields,
+        )
+        if response.status_code == 200:
+            print(f"Item {item_id} updated successfully!")
+        else:
+            print(f"Failed to update item {item_id}: {response.status_code} - {response.text}")

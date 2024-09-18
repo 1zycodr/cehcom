@@ -1,10 +1,59 @@
 from __future__ import annotations
+
+import requests
+
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, model_validator
 
 from .api import LeadAddItemRequest
+from .lead import build_nested_dict
 from .notion import Item, ItemStatus
+
+
+class NotionDTProduct(BaseModel):
+    id: str
+    notion_pz_nid: str
+
+    @model_validator(mode='before')
+    def extract_fields(self: dict, *args, **kwargs) -> dict:
+        self['id'] = str(self.get('id', ''))
+        self['notion_pz_nid'] = str(self.get('properties', {})
+                                     .get('ID П-заказа', {})
+                                     .get('unique_id', {})
+                                     .get('number', 0))
+        return self
+
+    def to_amo_update(self, item_id: int) -> dict:
+        return {
+            'id': item_id,
+            'custom_fields_values': [
+                {
+                    'field_id': 1450233,  # пз нид
+                    'values': [
+                        {
+                            'value': f'PZ-{self.notion_pz_nid}',
+                        },
+                    ],
+                },
+                {
+                    'field_id': 1450235,  # uid
+                    'values': [
+                        {
+                            'value': self.id,
+                        },
+                    ],
+                },
+                {
+                    'field_id': 1450237,  # uid
+                    'values': [
+                        {
+                            'value': f'https://www.notion.so/cehcom/{self.id.replace('-', '')}',
+                        },
+                    ],
+                },
+            ],
+        }
 
 
 class AMODTProduct(BaseModel):
@@ -12,6 +61,12 @@ class AMODTProduct(BaseModel):
     name: str = ''
     description: str = ''
     custom_fields_values: list[dict]
+
+    def lead_id(self) -> int:
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450239:
+                return int(field['values'][0]['values'][0]['value'])
+        return 0
 
     @classmethod
     def from_item(cls, item: Item, bt_item_id: int, body: LeadAddItemRequest) -> AMODTProduct:
@@ -61,7 +116,7 @@ class AMODTProduct(BaseModel):
             {
                 'field_id': 1110355,
                 'values': [
-                    {'value': item.description},
+                    {'value': body.description},
                 ],
             },
             {
@@ -118,6 +173,164 @@ class AMODTProduct(BaseModel):
             description=body.description,
             custom_fields_values=custom_fields,
         )
+
+    def get_description(self):
+        result = ''
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1110355:
+                result = field['values'][0]['values'][0]['value']
+        return result
+
+    def get_price(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1110357:
+                result = int(field['values'][0]['values'][0]['value'])
+        return result
+
+    def get_count(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450277:
+                result = int(field['values'][0]['values'][0]['value'])
+        return result
+
+    def get_agent_price(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450223:
+                result = int(field['values'][0]['values'][0]['value'])
+        return result
+
+    def get_sizes(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1447011:
+                result = field['values'][0]['values'][0]['value']
+        return result
+
+    def get_note(self):
+        result = ''
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450287:
+                result = field['values'][0]['values'][0]['value']
+        return result
+
+    def get_count_for_invoice(self):
+        result = 0
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450285:
+                result = int(field['values'][0]['values'][0]['value'])
+        return result
+
+    def get_photo(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450227:
+                result = field['values'][0]['values'][0]['value']
+        if result is not None:
+            url = result.replace('&amp;', '&')
+            result = requests.get(url).url
+        return result
+
+    def get_notion_parent_uid(self):
+        result = None
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450221:
+                result = field['values'][0]['values'][0]['value']
+        return result
+
+    def to_notion_update(self,
+                         item_notion_id: str | int,
+                         item_notion_lead_id: str | int,
+                         lead_uid: str) -> dict:
+        result = {
+            'Name': {
+                'title': [
+                    {
+                        'text': {
+                            'content': f'ПЗ-{item_notion_id}-{item_notion_lead_id} / {self.name}',
+                        }
+                    },
+                ],
+            },
+            'Статус': {
+                'status': {
+                    'name': 'Не приступили',
+                },
+            },
+            'Описание из amo': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_description(),
+                        }
+                    }
+                ]
+            },
+            'Цена': {
+                'number': self.get_price(),
+            },
+            'Шт': {
+                'number': self.get_count(),
+            },
+            'Цена агент': {
+                'number': self.get_agent_price(),
+            },
+            'Размеры из амо': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_sizes(),
+                        }
+                    }
+                ]
+            },
+            'Примечание': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_note(),
+                        }
+                    }
+                ]
+            },
+            'ID сделки amoCRM': {
+                'number': self.lead_id(),
+            },
+            'ID товара amoCRM': {
+                'number': self.id,
+            },
+            'Для накладной шт': {
+                'number': self.get_count_for_invoice(),
+            },
+            # 'Свое фото': {
+            #     "type": "files",
+            #     "files": [
+            #         {
+            #             "name": "image.jpg",
+            #             "external": {
+            #                 "url": self.get_photo(),
+            #             }
+            #         }
+            #     ] if self.get_photo() is not None else [],
+            # },
+            '🚇 Сделки в производстве': {
+                'relation': [
+                    {
+                        'id': lead_uid,
+                    },
+                ],
+            },
+            '💯 Товар': {
+                'relation': [
+                    {
+                        'id': self.get_notion_parent_uid(),
+                    },
+                ],
+            },
+        }
+        return result
 
 
 class AMOProduct(BaseModel):
@@ -356,3 +569,38 @@ class AMOProduct(BaseModel):
             name=item.title,
             custom_fields_values=custom_fields,
         )
+
+
+def transform_custom_fields_values(fields: dict):
+    transformed = []
+    for field_index, field_data in fields.items():
+        field_id = field_data['id']
+        field_data.pop('id')
+        transformed.append({
+            'field_id': field_id,
+            'values': [field_data],
+        })
+    return transformed
+
+
+def parse_dt_product_update(data) -> tuple[list, list]:
+    data = {k: v[0] if len(v) == 1 else v for k, v in data.items()}
+    data = build_nested_dict(data)
+
+    add_dts, update_dts = [], []
+
+    catalogs = data.get('catalogs', {})
+    add_items = catalogs.get('add', {})
+    update_items = catalogs.get('update', {})
+
+    for item in add_items.values():
+        item['custom_fields_values'] = transform_custom_fields_values(item['custom_fields'])
+        item = AMODTProduct(**item)
+        add_dts.append(item)
+
+    for item in update_items.values():
+        item['custom_fields_values'] = transform_custom_fields_values(item['custom_fields'])
+        item = AMODTProduct(**item)
+        update_dts.append(item)
+
+    return add_dts, update_dts
