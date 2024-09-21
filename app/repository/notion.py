@@ -185,22 +185,6 @@ class NotionRepo:
             page_id=uid,
             properties=item.to_notion_update(id, lead_id, lead_uid),
         )
-        # if (url := item.get_photo()) is not None:
-        #     resp = cls.client.blocks.children.append(
-        #         block_id=uid,
-        #         children=[
-        #             {
-        #                 'type': 'image',
-        #                 'image': {
-        #                     'type': 'external',
-        #                     'external': {
-        #                         'url': url,
-        #                     },
-        #                 }
-        #             }
-        #         ]
-        #     )
-        #     print(resp)
         return NotionDTProduct(**data)
 
     @classmethod

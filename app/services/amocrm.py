@@ -96,7 +96,7 @@ class AMOService:
 
         # обновление товаров сделки
         for item in updated:
-            pass
+            pass  # TODO обновление товаров
             # lead_id = item.lead_id()
             # if lead_id == 0:
             #     continue

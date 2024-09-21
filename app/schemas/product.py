@@ -228,9 +228,6 @@ class AMODTProduct(BaseModel):
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450227:
                 result = field['values'][0]['values'][0]['value']
-        if result is not None:
-            url = result.replace('&amp;', '&')
-            result = requests.get(url).url
         return result
 
     def get_notion_parent_uid(self):
