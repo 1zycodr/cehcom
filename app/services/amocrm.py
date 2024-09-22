@@ -54,10 +54,18 @@ class AMOService:
         self.process_dt_products_update(create_items, update_items)
 
     def sync_lead_items(self, lead_id: int):
-        update_items = AmoRepo.get_lead_items_ids(lead_id)
-        current_items = lead_item_crud.get_by_lead_id(self.db, lead_id)
-        if update_items != current_items:
-            pass
+        amo_items, _, _ = AmoRepo.get_lead_items_ids(lead_id)
+        current_items = lead_item_crud.get_by_lead_id_with_uid(self.db, lead_id)
+        amo_items = dict(amo_items)
+        for item_id, quantity, uid in current_items:
+            amo_quantity = amo_items.get(item_id, None)
+            if amo_quantity is not None:
+                if amo_quantity != quantity:
+                    NotionRepo.update_quantity(uid, int(amo_quantity))
+                    lead_item_crud.update_quantity(self.db, lead_id, item_id, int(amo_quantity))
+            else:
+                # отвязать от лида - для удаления
+                pass
 
     def process_dt_products_update(self,
                                    added: list[AMODTProduct],

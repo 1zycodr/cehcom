@@ -206,3 +206,15 @@ class NotionRepo:
             return uid, id
         except IndexError:
             return None, None
+
+    @classmethod
+    def update_quantity(cls, uid: str, quantity: int):
+        cls.client.pages.update(
+            page_id=uid,
+            properties={
+                'Шт': {
+                    'type': 'number',
+                    'number': quantity,
+                },
+            },
+        )
