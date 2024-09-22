@@ -73,7 +73,8 @@ class AMOService:
                                    added: list[AMODTProduct],
                                    updated: list[AMODTProduct]):
         # создание новых товаров сделки
-        time.sleep(2)
+        if len(added) > 0:  # если создались новые товары - ждём 2с обновления количества
+            time.sleep(2)
         for item in added:
             lead_id = item.lead_id()
             if lead_id == 0:
