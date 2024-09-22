@@ -1,3 +1,5 @@
+import time
+
 from app.crud.schemas import LeadCreate, LeadItemCreate
 from app.repository.amocrm import AmoRepo
 from app.repository.notion import NotionRepo
@@ -42,6 +44,7 @@ class AMOService:
 
     def _load_lead_items(self, lead_id: int):
         db_lead_items = dict(lead_item_crud.get_by_lead_id(self.db, lead_id))
+        time.sleep(3)
         amo_lead_items, _, _ = AmoRepo.get_lead_items_ids(lead_id)
         create_items_ids, update_items_ids = [], []
         for amo_item_id, amo_item_quantity in amo_lead_items:
