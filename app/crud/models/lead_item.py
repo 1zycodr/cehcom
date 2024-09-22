@@ -27,3 +27,15 @@ class LeadItem(CreatedAtMixin):
         String,
         nullable=False,
     )
+    data_hash = Column(
+        String,
+        nullable=False,
+    )
+    notion_nid = Column(
+        String,
+        nullable=True,
+    )
+    notion_lead_nid = Column(
+        String,
+        nullable=True,
+    )

@@ -139,9 +139,9 @@ async def process_data(request: Request, db: SessionLocal = Depends(get_db)):
     body_bytes = await request.body()
     body_str = body_bytes.decode('utf-8')
     decoded_data = urllib.parse.parse_qs(body_str)  # noqa
-    added, updated = parse_dt_product_update(decoded_data)
+    added, updated, deleted = parse_dt_product_update(decoded_data)
     try:
-        AMOService(db).process_dt_products_update(added, updated)
+        AMOService(db).process_dt_products_update(added, updated, deleted)
     except Exception as ex:
         Alert.critical(f'⛔️Ошибка при обновлении товаров сделки:\n\n{ex}')
     return {

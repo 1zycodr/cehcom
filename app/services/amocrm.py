@@ -71,7 +71,8 @@ class AMOService:
 
     def process_dt_products_update(self,
                                    added: list[AMODTProduct],
-                                   updated: list[AMODTProduct]):
+                                   updated: list[AMODTProduct],
+                                   deleted: list[int] | None = None):
         # создание новых товаров сделки
         if len(added) > 0:  # если создались новые товары - ждём 2с обновления количества
             time.sleep(2)
@@ -118,22 +119,36 @@ class AMOService:
                     item_id=item.id,
                     quantity=quantity,
                     notion_uid=uid,
+                    notion_nid=notion_item_id,
+                    notion_lead_nid=notion_item_lead_id,
+                    data_hash=item.hash(),
                 ),
             )
             # обновляем товар в амо
             AmoRepo.update_lead_item_after_creation(
                 item.id, notion_item.to_amo_update(item.id))
 
-        # обновление товаров сделки
+        # обновление товаров сделки из amo -> notion
         for item in updated:
-            pass  # TODO обновление товаров
-            # lead_id = item.lead_id()
-            # if lead_id == 0:
-            #     continue
-            # # проверка присутствия в бд
-            # db_lead_items = lead_item_crud.get_by_lead_id(self.db, lead_id)
-            # db_lead_items = dict(db_lead_items)
-            # # если есть - переносим в обновление
-            # if item.id in db_lead_items:
-            #     updated.append(item)
-            #     continue
+            lead_id = item.lead_id()
+            if lead_id == 0:
+                continue
+            # проверка присутствия в бд
+            db_lead_item = lead_item_crud.get_by_lead_id_item_id(self.db, lead_id, item.id)
+            if db_lead_item is None:
+                continue
+            # проверяем хеш
+            if db_lead_item.data_hash == item.hash():
+                continue
+            # обновление в notion
+            NotionRepo.update_lead_item_partial(item, db_lead_item)
+            # сохранение хеша
+            lead_item_crud.update_hash(self.db, db_lead_item.lead_id, db_lead_item.item_id, item.hash())
+            print('Updated lead item:', item.id)
+
+        if deleted is not None:
+            items = lead_item_crud.get_by_item_ids(self.db, deleted)
+            for item in items:
+                NotionRepo.archive(item.notion_uid)
+                print('Archived lead item:', item.item_id)
+            lead_item_crud.delete_by_item_ids(self.db, deleted)

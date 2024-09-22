@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv, find_dotenv, set_key
 
 from app.core import settings
+from app.crud.models.lead_item import LeadItem
 from app.schemas import AMODTProduct, NotionDTProduct
 from app.schemas.lead import Lead, LeadUpdate, NotionLead
 from app.schemas.notion import *
@@ -189,6 +190,16 @@ class NotionRepo:
         return NotionDTProduct(**data)
 
     @classmethod
+    def update_lead_item_partial(cls, item: AMODTProduct, db_item: LeadItem):
+        cls.client.pages.update(
+            page_id=db_item.notion_uid,
+            properties=item.to_notion_partial_update(
+                db_item.notion_nid,
+                db_item.notion_lead_nid
+            ),
+        )
+
+    @classmethod
     def get_lead_item_template(cls) -> (str | None, int | None):
         resp = cls.client.databases.query(
             database_id=cls.lead_items_db_id,
@@ -217,4 +228,11 @@ class NotionRepo:
                     'number': quantity,
                 },
             },
+        )
+
+    @classmethod
+    def archive(cls, uid: str):
+        cls.client.pages.update(
+            page_id=uid,
+            archived=True,
         )

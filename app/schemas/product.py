@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import hashlib
+import json
+
 import requests
 
 from datetime import datetime, timezone
@@ -62,6 +65,10 @@ class AMODTProduct(BaseModel):
     description: str = ''
     custom_fields_values: list[dict]
 
+    def hash(self) -> str:
+        dict_str = json.dumps(self.dict(), sort_keys=True)
+        return hashlib.md5(dict_str.encode('utf-8')).hexdigest()
+
     def lead_id(self) -> int:
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450239:
@@ -70,6 +77,140 @@ class AMODTProduct(BaseModel):
                 except KeyError:
                     return int(field['values'][0]['value'])
         return 0
+
+    def to_notion_partial_update(self,
+                                 item_notion_id: str | int,
+                                 item_notion_lead_id: str | int) -> dict:
+        result = {
+            'Name': {
+                'title': [
+                    {
+                        'text': {
+                            'content': f'ПЗ-{item_notion_id}-{item_notion_lead_id} / {self.name}',
+                        }
+                    },
+                ],
+            },
+            'Цена агент': {
+                'number': self.get_agent_price(),
+            },
+            'Описание из amo': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_description(),
+                        }
+                    }
+                ]
+            },
+            'Цена': {
+                'number': self.get_price(),
+            },
+            'Размеры из амо': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_sizes(),
+                        }
+                    }
+                ]
+            },
+            'Примечание': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_note(),
+                        }
+                    }
+                ]
+            },
+            'Для накладной шт': {
+                'number': self.get_count_for_invoice(),
+            },
+        }
+        return result
+
+    def to_notion_update(self,
+                         item_notion_id: str | int,
+                         item_notion_lead_id: str | int,
+                         lead_uid: str,
+                         quantity: int) -> dict:
+        result = {
+            'Name': {
+                'title': [
+                    {
+                        'text': {
+                            'content': f'ПЗ-{item_notion_id}-{item_notion_lead_id} / {self.name}',
+                        }
+                    },
+                ],
+            },
+            'Статус': {
+                'status': {
+                    'name': 'Не приступили',
+                },
+            },
+            'Описание из amo': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_description(),
+                        }
+                    }
+                ]
+            },
+            'Цена': {
+                'number': self.get_price(),
+            },
+            'Шт': {
+                'number': quantity,
+            },
+            'Цена агент': {
+                'number': self.get_agent_price(),
+            },
+            'Размеры из амо': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_sizes(),
+                        }
+                    }
+                ]
+            },
+            'Примечание': {
+                'rich_text': [
+                    {
+                        'text': {
+                            'content': self.get_note(),
+                        }
+                    }
+                ]
+            },
+            'ID сделки amoCRM': {
+                'number': self.lead_id(),
+            },
+            'ID товара amoCRM': {
+                'number': self.id,
+            },
+            'Для накладной шт': {
+                'number': self.get_count_for_invoice(),
+            },
+            '🚇 Сделки в производстве': {
+                'relation': [
+                    {
+                        'id': lead_uid,
+                    },
+                ],
+            },
+            '💯 Товар': {
+                'relation': [
+                    {
+                        'id': self.get_notion_parent_uid(),
+                    },
+                ],
+            },
+        }
+        return result
 
     @classmethod
     def from_item(cls, item: Item, bt_item_id: int, body: LeadAddItemRequest) -> AMODTProduct:
@@ -265,99 +406,6 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['values'][0]['value']
                 except KeyError:
                     result = field['values'][0]['value']
-        return result
-
-    def to_notion_update(self,
-                         item_notion_id: str | int,
-                         item_notion_lead_id: str | int,
-                         lead_uid: str,
-                         quantity: int) -> dict:
-        result = {
-            'Name': {
-                'title': [
-                    {
-                        'text': {
-                            'content': f'ПЗ-{item_notion_id}-{item_notion_lead_id} / {self.name}',
-                        }
-                    },
-                ],
-            },
-            'Статус': {
-                'status': {
-                    'name': 'Не приступили',
-                },
-            },
-            'Описание из amo': {
-                'rich_text': [
-                    {
-                        'text': {
-                            'content': self.get_description(),
-                        }
-                    }
-                ]
-            },
-            'Цена': {
-                'number': self.get_price(),
-            },
-            'Шт': {
-                'number': quantity,
-            },
-            'Цена агент': {
-                'number': self.get_agent_price(),
-            },
-            'Размеры из амо': {
-                'rich_text': [
-                    {
-                        'text': {
-                            'content': self.get_sizes(),
-                        }
-                    }
-                ]
-            },
-            'Примечание': {
-                'rich_text': [
-                    {
-                        'text': {
-                            'content': self.get_note(),
-                        }
-                    }
-                ]
-            },
-            'ID сделки amoCRM': {
-                'number': self.lead_id(),
-            },
-            'ID товара amoCRM': {
-                'number': self.id,
-            },
-            'Для накладной шт': {
-                'number': self.get_count_for_invoice(),
-            },
-            # 'Свое фото': {
-            #     "type": "files",
-            #     "files": [
-            #         {
-            #             "name": "image.jpg",
-            #             "external": {
-            #                 "url": self.get_photo(),
-            #             }
-            #         }
-            #     ] if self.get_photo() is not None else [],
-            # },
-            '🚇 Сделки в производстве': {
-                'relation': [
-                    {
-                        'id': lead_uid,
-                    },
-                ],
-            },
-            '💯 Товар': {
-                'relation': [
-                    {
-                        'id': self.get_notion_parent_uid(),
-                    },
-                ],
-            },
-        }
         return result
 
 
@@ -611,15 +659,16 @@ def transform_custom_fields_values(fields: dict):
     return transformed
 
 
-def parse_dt_product_update(data) -> tuple[list, list]:
+def parse_dt_product_update(data) -> tuple[list[AMODTProduct], list[AMODTProduct], list[int]]:
     data = {k: v[0] if len(v) == 1 else v for k, v in data.items()}
     data = build_nested_dict(data)
 
-    add_dts, update_dts = [], []
+    add_dts, update_dts, delete_dts = [], [], []
 
     catalogs = data.get('catalogs', {})
     add_items = catalogs.get('add', {})
     update_items = catalogs.get('update', {})
+    delete_items = catalogs.get('delete', {})
 
     for item in add_items.values():
         item['custom_fields_values'] = transform_custom_fields_values(item['custom_fields'])
@@ -631,4 +680,7 @@ def parse_dt_product_update(data) -> tuple[list, list]:
         item = AMODTProduct(**item)
         update_dts.append(item)
 
-    return add_dts, update_dts
+    for item in delete_items.items():
+        delete_dts.append(int(item[1]['id']))
+
+    return add_dts, update_dts, delete_dts
