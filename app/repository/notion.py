@@ -122,7 +122,7 @@ class NotionRepo:
     def add_lead(cls, lead: Lead) -> str:
         result = cls.client.pages.create(
             parent={'database_id': cls.lead_db_id},
-            icon={'external': {'url': 'https://www.notion.so/icons/timeline_lightgray.svg'}, 'type': 'external'},
+            icon={'external': {'url': 'https://www.notion.so/icons/briefcase_brown.svg?mode=dark'}, 'type': 'external'},
             properties=lead.to_notion(),
         )
         return result['id']
