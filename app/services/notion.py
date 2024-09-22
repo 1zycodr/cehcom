@@ -123,10 +123,20 @@ class NotionService:
             time_start = datetime.now(cls.timezone)
 
             leads = cls.notion_repo.load_updated_leads(update_all)
-            filtered_items = [lead for lead in leads if lead.id != 0]
 
-            if len(filtered_items) != 0:
-                AmoRepo.update_leads(filtered_items)
+            update_leads = []
+            for lead in leads:
+                old_hash = red.get(f'sync-notion-lead-hash-{lead.id}')
+                new_hash = lead.hash()
+                if old_hash is not None:
+                    if old_hash.decode('utf-8') == new_hash:
+                        continue
+                red.set(f'sync-notion-lead-hash-{lead.id}', new_hash)
+                update_leads.append(lead)
+
+            print('updating leads:', [lead.id for lead in update_leads])
+            if len(update_leads) != 0:
+                AmoRepo.update_leads(leads)
 
             time_finish = datetime.now(cls.timezone)
             print('finish sync leads, time elapsed:', time_finish - time_start)

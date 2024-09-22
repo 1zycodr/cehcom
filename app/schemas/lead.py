@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from datetime import datetime, timezone
 from pydantic import BaseModel, model_validator
 
@@ -382,6 +384,10 @@ class Lead(BaseModel):
 class LeadUpdate(BaseModel):
     id: int
     custom_fields_values: list[dict]
+
+    def hash(self) -> str:
+        dict_str = json.dumps(self.dict(), sort_keys=True)
+        return hashlib.md5(dict_str.encode('utf-8')).hexdigest()
 
     @classmethod
     def from_notion_resp(cls, data: dict) -> LeadUpdate:

@@ -312,3 +312,35 @@ class AmoRepo:
             print(f"Item {item_id} updated successfully!")
         else:
             print(f"Failed to update item {item_id}: {response.status_code} - {response.text}")
+
+    @classmethod
+    def get_lead_products(cls, ids: list[int]) -> list[AMODTProduct]:
+        time.sleep(.2)
+        url = '/api/v4/catalogs/9035/elements'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+
+        result = []
+
+        for id in ids:
+            params = {
+                'id': id,
+            }
+
+            response = requests.get(
+                "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+                headers=headers,
+                params=params,
+            )
+            if response.status_code == 204:
+                continue
+            data = response.json()
+            element = data.get('_embedded', {}).get('elements', [None])[0]
+            if element is not None:
+                result.append(AMODTProduct(**element))
+
+        return result
+

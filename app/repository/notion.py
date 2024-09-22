@@ -164,26 +164,27 @@ class NotionRepo:
                         'on_or_after': updated_at,
                     },
                 },
-                # {
-                #     'property': 'Name',
-                #     'title': {
-                #         'equals': 'Амирлан Лид',
-                #     },
-                # },
+                {
+                    'property': 'ID сделки amoCRM',
+                    'number': {
+                        'is_not_empty': True,
+                    },
+                },
             ],
         }
         time_start = datetime.now(cls.timezone)
         leads = cls.get_leads(filter)
         print('Leads loaded from Notion:', len(leads))
         print('Time elapsed:', datetime.now(cls.timezone) - time_start)
-        cls.set_updated_at_leads(time_start)
+        if not update_all:
+            cls.set_updated_at_leads(time_start)
         return leads
 
     @classmethod
-    def update_lead_item(cls, item: AMODTProduct, uid: str, id: int, lead_id: str, lead_uid: str) -> NotionDTProduct:
+    def update_lead_item(cls, item: AMODTProduct, uid: str, id: int, lead_id: str, lead_uid: str, quantity: int) -> NotionDTProduct:
         data = cls.client.pages.update(
             page_id=uid,
-            properties=item.to_notion_update(id, lead_id, lead_uid),
+            properties=item.to_notion_update(id, lead_id, lead_uid, quantity),
         )
         return NotionDTProduct(**data)
 
@@ -197,7 +198,7 @@ class NotionRepo:
                     'equals': 'Черновик'
                 }
             },
-            page_size=1
+            page_size=1,
         )
         try:
             uid = resp.get('results', [{'id': None}])[0].get('id')

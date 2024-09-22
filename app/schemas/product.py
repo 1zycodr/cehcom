@@ -65,7 +65,10 @@ class AMODTProduct(BaseModel):
     def lead_id(self) -> int:
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450239:
-                return int(field['values'][0]['values'][0]['value'])
+                try:
+                    return int(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    return int(field['values'][0]['value'])
         return 0
 
     @classmethod
@@ -178,69 +181,97 @@ class AMODTProduct(BaseModel):
         result = ''
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1110355:
-                result = field['values'][0]['values'][0]['value']
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
         return result
 
     def get_price(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1110357:
-                result = int(field['values'][0]['values'][0]['value'])
+                try:
+                    result = int(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    result = int(field['values'][0]['value'])
         return result
 
     def get_count(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450277:
-                result = int(field['values'][0]['values'][0]['value'])
+                try:
+                    result = int(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    result = int(field['values'][0]['value'])
         return result
 
     def get_agent_price(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450223:
-                result = int(field['values'][0]['values'][0]['value'])
+                try:
+                    result = int(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    result = int(field['values'][0]['value'])
         return result
 
     def get_sizes(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1447011:
-                result = field['values'][0]['values'][0]['value']
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
         return result
 
     def get_note(self):
         result = ''
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450287:
-                result = field['values'][0]['values'][0]['value']
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
         return result
 
     def get_count_for_invoice(self):
         result = 0
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450285:
-                result = int(field['values'][0]['values'][0]['value'])
+                try:
+                    result = int(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    result = int(field['values'][0]['value'])
         return result
 
     def get_photo(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450227:
-                result = field['values'][0]['values'][0]['value']
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
         return result
 
     def get_notion_parent_uid(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450221:
-                result = field['values'][0]['values'][0]['value']
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
         return result
 
     def to_notion_update(self,
                          item_notion_id: str | int,
                          item_notion_lead_id: str | int,
-                         lead_uid: str) -> dict:
+                         lead_uid: str,
+                         quantity: int) -> dict:
         result = {
             'Name': {
                 'title': [
@@ -269,7 +300,7 @@ class AMODTProduct(BaseModel):
                 'number': self.get_price(),
             },
             'Шт': {
-                'number': self.get_count(),
+                'number': quantity,
             },
             'Цена агент': {
                 'number': self.get_agent_price(),
