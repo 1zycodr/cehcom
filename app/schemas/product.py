@@ -359,7 +359,7 @@ class AMODTProduct(BaseModel):
         return result
 
     def get_sizes(self):
-        result = None
+        result = ''
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1447011:
                 try:
