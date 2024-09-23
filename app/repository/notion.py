@@ -210,6 +210,12 @@ class NotionRepo:
                 }
             },
             page_size=1,
+            sorts=[
+                {
+                    'property': 'ID П-заказа',
+                    'direction': 'ascending',
+                },
+            ],
         )
         try:
             uid = resp.get('results', [{'id': None}])[0].get('id')

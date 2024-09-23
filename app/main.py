@@ -58,6 +58,7 @@ def shutdown():
 
 
 if __name__ == "__main__":
+    Alert.critical('`🟢 Сервер запущен.`')
     red.delete('sync-running')
     red.delete('sync-leads-running')
     uvicorn.run("app.main:app", host='0.0.0.0', port=8000)
