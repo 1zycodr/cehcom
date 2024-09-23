@@ -112,7 +112,13 @@ class NotionRepo:
                     'equals': 'Черновик'
                 }
             },
-            page_size=1
+            page_size=1,
+            sorts=[
+                {
+                    'property': 'ID заказа в Notion',
+                    'direction': 'ascending',
+                },
+            ],
         )
         try:
             return resp.get('results', [{'id': None}])[0].get('id')
