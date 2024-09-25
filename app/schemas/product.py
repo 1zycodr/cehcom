@@ -13,6 +13,8 @@ from .api import LeadAddItemRequest
 from .lead import build_nested_dict
 from .notion import Item, ItemStatus
 
+from app.utils.file_storage import save_file_from_url
+
 
 class NotionDTProduct(BaseModel):
     id: str
@@ -404,9 +406,13 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['values'][0]['value']
                 except KeyError:
                     result = field['values'][0]['value']
+        if result is not None:
+            timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+            result = save_file_from_url(result, f'{self.id}-{timestamp}.jpg')
         return result
 
     def get_notion_parent_uid(self) -> list:
+        s = self.get_photo()
         result = []
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450221:
