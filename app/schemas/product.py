@@ -80,7 +80,8 @@ class AMODTProduct(BaseModel):
 
     def to_notion_partial_update(self,
                                  item_notion_id: str | int,
-                                 item_notion_lead_id: str | int) -> dict:
+                                 item_notion_lead_id: str | int,
+                                 item_notion_lead_uid: str) -> dict:
         result = {
             'Name': {
                 'title': [
@@ -126,6 +127,13 @@ class AMODTProduct(BaseModel):
             },
             'Для накладной шт': {
                 'number': self.get_count_for_invoice(),
+            },
+            '🚇 Сделки в производстве': {
+                'relation': [
+                    {
+                        'id': item_notion_lead_uid,
+                    },
+                ],
             },
         }
         return result
@@ -205,8 +213,8 @@ class AMODTProduct(BaseModel):
             '💯 Товар': {
                 'relation': [
                     {
-                        'id': self.get_notion_parent_uid(),
-                    },
+                        'id': uid,
+                    } for uid in self.get_notion_parent_uid()
                 ],
             },
         }
@@ -398,14 +406,14 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['value']
         return result
 
-    def get_notion_parent_uid(self):
-        result = None
+    def get_notion_parent_uid(self) -> list:
+        result = []
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450221:
                 try:
-                    result = field['values'][0]['values'][0]['value']
+                    result.append(field['values'][0]['values'][0]['value'])
                 except KeyError:
-                    result = field['values'][0]['value']
+                    result.append(field['values'][0]['value'])
         return result
 
 

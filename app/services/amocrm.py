@@ -59,20 +59,35 @@ class AMOService:
         amo_items, _, _ = AmoRepo.get_lead_items_ids(lead_id)
         current_items = lead_item_crud.get_by_lead_id_with_uid(self.db, lead_id)
         amo_items = dict(amo_items)
-        for item_id, quantity, uid in current_items:
-            amo_quantity = amo_items.get(item_id, None)
-            if amo_quantity is not None:
-                if amo_quantity != quantity:
-                    NotionRepo.update_quantity(uid, int(amo_quantity))
-                    lead_item_crud.update_quantity(self.db, lead_id, item_id, int(amo_quantity))
+        current_items = dict(current_items)
+        add_items_ids = []
+        update_items_ids = []
+        for item_id, quantity in amo_items.items():
+            curr_quantity, current_item_uid = current_items.get(item_id, (None, None))
+            if current_item_uid is not None:
+                if curr_quantity != quantity:
+                    NotionRepo.update_quantity(current_item_uid, int(quantity))
+                    lead_item_crud.update_quantity(self.db, lead_id, item_id, quantity)
+                update_items_ids.append(int(item_id))
             else:
-                # отвязать от лида - для удаления
-                pass
+                add_items_ids.append(int(item_id))
+        for item_id, pair in current_items.items():
+            _, uid = pair
+            if item_id not in amo_items:
+                NotionRepo.unlink_item_from_lead(uid)
+        create_items = AmoRepo.get_lead_products(add_items_ids)
+        update_items = AmoRepo.get_lead_products(update_items_ids)
+        self.process_dt_products_update(
+            create_items,
+            update_items,
+            check_hash=False,
+        )
 
     def process_dt_products_update(self,
                                    added: list[AMODTProduct],
                                    updated: list[AMODTProduct],
-                                   deleted: list[int] | None = None):
+                                   deleted: list[int] | None = None,
+                                   check_hash: bool = True):
         # создание новых товаров сделки
         if len(added) > 0:  # если создались новые товары - ждём 2с обновления количества
             time.sleep(2)
@@ -138,10 +153,11 @@ class AMOService:
             if db_lead_item is None:
                 continue
             # проверяем хеш
-            if db_lead_item.data_hash == item.hash():
+            if check_hash and db_lead_item.data_hash == item.hash():
                 continue
-            # обновление в notion
-            NotionRepo.update_lead_item_partial(item, db_lead_item)
+            # обновление в notion с lead_uid
+            lead_uid = lead_crud.get_uid_by_amo_id(self.db, lead_id)
+            NotionRepo.update_lead_item_partial(item, db_lead_item, lead_uid)
             # сохранение хеша
             lead_item_crud.update_hash(self.db, db_lead_item.lead_id, db_lead_item.item_id, item.hash())
             print('Updated lead item:', item.id)

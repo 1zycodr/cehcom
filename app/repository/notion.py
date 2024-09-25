@@ -196,14 +196,35 @@ class NotionRepo:
         return NotionDTProduct(**data)
 
     @classmethod
-    def update_lead_item_partial(cls, item: AMODTProduct, db_item: LeadItem):
-        cls.client.pages.update(
-            page_id=db_item.notion_uid,
-            properties=item.to_notion_partial_update(
-                db_item.notion_nid,
-                db_item.notion_lead_nid
-            ),
-        )
+    def update_lead_item_partial(cls,
+                                 item: AMODTProduct,
+                                 db_item: LeadItem,
+                                 lead_uid: str):
+        try:
+            cls.client.pages.update(
+                page_id=db_item.notion_uid,
+                properties=item.to_notion_partial_update(
+                    db_item.notion_nid,
+                    db_item.notion_lead_nid,
+                    lead_uid,
+                ),
+            )
+        except APIResponseError as e:
+            if 'archived' in str(e):
+                cls.client.pages.update(
+                    page_id=db_item.notion_uid,
+                    archived=False,
+                )
+                cls.client.pages.update(
+                    page_id=db_item.notion_uid,
+                    properties=item.to_notion_partial_update(
+                        db_item.notion_nid,
+                        db_item.notion_lead_nid,
+                        lead_uid,
+                    ),
+                )
+            else:
+                raise e
 
     @classmethod
     def get_lead_item_template(cls) -> (str | None, int | None):
@@ -247,4 +268,15 @@ class NotionRepo:
         cls.client.pages.update(
             page_id=uid,
             archived=True,
+        )
+
+    @classmethod
+    def unlink_item_from_lead(cls, uid: str):
+        cls.client.pages.update(
+            page_id=uid,
+            properties={
+                '🚇 Сделки в производстве': {
+                    'relation': [],
+                },
+            },
         )

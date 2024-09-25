@@ -24,7 +24,7 @@ class CRUDLeadItem(CRUDBase[LeadItem, LeadItemCreate, LeadItemUpdate]):
         ).first()
         return data
 
-    def get_by_lead_id_with_uid(self, db: SessionLocal, lead_id: int) -> list[(int, int, str)]:
+    def get_by_lead_id_with_uid(self, db: SessionLocal, lead_id: int) -> list[(int, (int, str))]:
         data = db.query(
             self.model.item_id,
             self.model.quantity,
@@ -32,6 +32,10 @@ class CRUDLeadItem(CRUDBase[LeadItem, LeadItemCreate, LeadItemUpdate]):
         ).filter(
             self.model.lead_id == lead_id,
         ).all()
+        data = [
+            (item_id, (quantity, notion_uid))
+            for item_id, quantity, notion_uid in data
+        ]
         return data
 
     def update_quantity(self, db: SessionLocal, lead_id: int, item_id: int, quantity: int):

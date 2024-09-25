@@ -18,5 +18,12 @@ class CRUDLead(CRUDBase[Lead, LeadCreate, LeadUpdate]):
         )
         db.commit()
 
+    def get_uid_by_amo_id(self, db, amo_id: int) -> str | None:
+        return db.query(
+            self.model.notion_uid,
+        ).filter(
+            self.model.amo_id == amo_id,
+        ).first()[0]
+
 
 lead = CRUDLead(Lead)
