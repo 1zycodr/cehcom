@@ -200,7 +200,6 @@ class NotionRepo:
             properties=item.to_notion_update(id, lead_id, lead_uid, quantity),
         )
         url = item.get_photo()
-        print('ITEM PHOTO', url)
         if url:
             cls.client.blocks.children.append(
                 block_id=uid,

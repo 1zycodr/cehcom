@@ -146,6 +146,17 @@ class AMODTProduct(BaseModel):
                          lead_uid: str,
                          quantity: int) -> dict:
         result = {
+            'Свое фото': {
+                "type": "files",
+                "files": [
+                    {
+                        "name": "image.jpg",
+                        "external": {
+                            "url": self.get_photo(),
+                        }
+                    }
+                ] if self.get_photo() is not None else [],
+            },
             'Name': {
                 'title': [
                     {
