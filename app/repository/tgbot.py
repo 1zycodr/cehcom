@@ -14,6 +14,7 @@ class Alert:
 
     @classmethod
     def critical(cls, message: str):
+        print('CRITICAL', message)
         cls.bot.send_message(
             cls.chat_id,
             message,
