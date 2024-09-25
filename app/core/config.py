@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     POSTGRES_ECHO: bool
     SQLALCHEMY_DATABASE_URI: PostgresDsn | None = None
 
+    # files
+    UPLOAD_DIR: str = 'media'
+
     @field_validator('SQLALCHEMY_DATABASE_URI', mode='after')
     def assemble_db_connection(cls, v: str, values: FieldValidationInfo) -> str:
         if v is not None:
