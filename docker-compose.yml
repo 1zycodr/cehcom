@@ -16,6 +16,7 @@ services:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - ./media:/usr/share/nginx/html/media
     networks:
       - backend_network
   certbot:
@@ -34,6 +35,8 @@ services:
       - backend_network
     depends_on:
       - redis
+    volumes:
+      - ./media:/app/media
   db:
     image: postgres:16-alpine3.19
     restart: unless-stopped
