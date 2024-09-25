@@ -72,9 +72,9 @@ class Lead(BaseModel):
         date_start = self.custom_fields.get('1421827', {}).get('values', [''])[0]
         date_end = self.custom_fields.get('1421829', {}).get('values', [''])[0]
         if date_start != '':
-            date_start = datetime.fromtimestamp(int(date_start), timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            date_start = datetime.fromtimestamp(int(date_start), timezone.utc).strftime('%Y-%m-%d')
         if date_end != '':
-            date_end = datetime.fromtimestamp(int(date_end), timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            date_end = datetime.fromtimestamp(int(date_end), timezone.utc).strftime('%Y-%m-%d')
         return date_start, date_end
 
     def contract_number(self) -> str:
