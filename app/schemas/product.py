@@ -412,7 +412,6 @@ class AMODTProduct(BaseModel):
         return result
 
     def get_notion_parent_uid(self) -> list:
-        s = self.get_photo()
         result = []
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450221:

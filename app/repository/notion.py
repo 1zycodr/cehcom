@@ -188,11 +188,35 @@ class NotionRepo:
         return leads
 
     @classmethod
-    def update_lead_item(cls, item: AMODTProduct, uid: str, id: int, lead_id: str, lead_uid: str, quantity: int) -> NotionDTProduct:
+    def update_lead_item(cls,
+                         item: AMODTProduct,
+                         uid: str,
+                         id: int,
+                         lead_id: str,
+                         lead_uid: str,
+                         quantity: int) -> NotionDTProduct:
         data = cls.client.pages.update(
             page_id=uid,
             properties=item.to_notion_update(id, lead_id, lead_uid, quantity),
         )
+        url = item.get_photo()
+        print('ITEM PHOTO', url)
+        if url:
+            cls.client.blocks.children.append(
+                block_id=uid,
+                children=[
+                    {
+                        'object': 'block',
+                        'type': 'image',
+                        'image': {
+                            'type': 'external',
+                            'external': {
+                                'url': url,
+                            },
+                        },
+                    },
+                ],
+            )
         return NotionDTProduct(**data)
 
     @classmethod
