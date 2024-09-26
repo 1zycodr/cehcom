@@ -45,7 +45,7 @@ class NotionLead(BaseModel):
                     'field_id': 1450275,
                     'values': [
                         {
-                            'value': f"C-{self.notion_lead_id}",
+                            'value': f"LP-{self.notion_lead_id}",
                         },
                     ],
                 },
@@ -128,6 +128,9 @@ class Lead(BaseModel):
     def company_uid(self) -> str:
         return self.custom_fields.get('1450457', {}).get('values', [{}])[0].get('value', '')
 
+    def nid(self) -> str:
+        return self.custom_fields.get('1450275', {}).get('values', [{}])[0].get('value', '')
+
     def to_notion(self) -> dict:
         description = self.description()
         date_start, date_end = self.deadline()
@@ -150,7 +153,7 @@ class Lead(BaseModel):
                 'title': [
                     {
                         'text': {
-                            'content': self.name,
+                            'content': f'C-{self.nid()} / {self.name}',
                         }
                     },
                 ],
@@ -278,7 +281,7 @@ class Lead(BaseModel):
                 'title': [
                     {
                         'text': {
-                            'content': self.name,
+                            'content': f'C-{self.nid()} / {self.name}',
                         }
                     },
                 ],
