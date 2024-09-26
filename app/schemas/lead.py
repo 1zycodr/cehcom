@@ -45,7 +45,7 @@ class NotionLead(BaseModel):
                     'field_id': 1450275,
                     'values': [
                         {
-                            'value': f"LP-{self.notion_lead_id}",
+                            'value': f"C-{self.notion_lead_id}",
                         },
                     ],
                 },
