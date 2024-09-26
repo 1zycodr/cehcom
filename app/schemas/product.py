@@ -145,6 +145,11 @@ class AMODTProduct(BaseModel):
                          item_notion_lead_id: str | int,
                          lead_uid: str,
                          quantity: int) -> dict:
+        parents = self.get_notion_parent_uid()
+        child = self.get_notion_uid()
+        if len(parents) == 0 and len(child) == 1:
+            parents = child
+            child = []
         result = {
             'Свое фото': {
                 "type": "files",
@@ -227,14 +232,14 @@ class AMODTProduct(BaseModel):
                 'relation': [
                     {
                         'id': uid,
-                    } for uid in self.get_notion_parent_uid()
+                    } for uid in parents
                 ],
             },
             '💯 Подтовар': {
                 'relation': [
                     {
                         'id': uid,
-                    } for uid in self.get_notion_uid()
+                    } for uid in child
                 ],
             }
         }
