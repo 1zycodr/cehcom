@@ -19,6 +19,8 @@ services:
       - ./media:/usr/share/nginx/html/media
     networks:
       - backend_network
+    depends_on:
+      - backend
   certbot:
     image: certbot/certbot:v2.11.0
     volumes:
