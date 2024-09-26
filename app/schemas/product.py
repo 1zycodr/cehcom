@@ -321,6 +321,12 @@ class AMODTProduct(BaseModel):
                 ],
             },
             {
+                'field_id': 1450635,
+                'values': [
+                    {'value': item.main_item},
+                ],
+            },
+            {
                 'field_id': 1450213,
                 'values': [
                     {
@@ -496,6 +502,7 @@ class AMOProduct(BaseModel):
             created_by=get_custom_field_value(1450191),  # Created by
             price_formula=get_custom_field_value(1450151),  # price formula
             clear_title=get_custom_field_value(1450205),
+            main_item=get_custom_field_value(1450637),
         )
 
     @classmethod
