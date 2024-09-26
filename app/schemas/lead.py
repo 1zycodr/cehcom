@@ -129,7 +129,8 @@ class Lead(BaseModel):
         return self.custom_fields.get('1450457', {}).get('values', [{}])[0].get('value', '')
 
     def nid(self) -> str:
-        return self.custom_fields.get('1450275', {}).get('values', [{}])[0].get('value', '')
+        result = self.custom_fields.get('1450275', {}).get('values', [{}])[0].get('value', '')
+        return result.replace('LP-', 'C-')
 
     def to_notion(self) -> dict:
         description = self.description()
@@ -153,7 +154,7 @@ class Lead(BaseModel):
                 'title': [
                     {
                         'text': {
-                            'content': f'C-{self.nid()} / {self.name}',
+                            'content': f'{self.nid()} / {self.name}',
                         }
                     },
                 ],
@@ -281,7 +282,7 @@ class Lead(BaseModel):
                 'title': [
                     {
                         'text': {
-                            'content': f'C-{self.nid()} / {self.name}',
+                            'content': f'{self.nid()} / {self.name}',
                         }
                     },
                 ],
