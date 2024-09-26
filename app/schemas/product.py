@@ -651,7 +651,7 @@ class AMOProduct(BaseModel):
                 ],
             },
             {
-                'field_id': 1450151,
+                'field_id': 1450637,
                 'values': [
                     {'value': item.main_item},
                 ],
