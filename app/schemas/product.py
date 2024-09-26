@@ -230,6 +230,13 @@ class AMODTProduct(BaseModel):
                     } for uid in self.get_notion_parent_uid()
                 ],
             },
+            '💯 Подтовар': {
+                'relation': [
+                    {
+                        'id': uid,
+                    } for uid in self.get_notion_uid()
+                ],
+            }
         }
         return result
 
@@ -429,6 +436,16 @@ class AMODTProduct(BaseModel):
         return result
 
     def get_notion_parent_uid(self) -> list:
+        result = []
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450635:
+                try:
+                    result.append(field['values'][0]['values'][0]['value'])
+                except KeyError:
+                    result.append(field['values'][0]['value'])
+        return result
+
+    def get_notion_uid(self) -> list:
         result = []
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450221:
