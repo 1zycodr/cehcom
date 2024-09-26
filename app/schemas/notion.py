@@ -40,6 +40,7 @@ class Item(BaseModel):
     last_edited_by: str = ''  # last edited by
     created_by: str = ''  # Created by
     linked_ids: list[str] | None = None
+    main_item: str = ''
 
     @classmethod
     def from_response(cls, resp: dict) -> Item:
@@ -82,11 +83,12 @@ class Item(BaseModel):
         main_products = cls.getter(props, 'Главный продукт', 'relation')
         for relation in main_products:
             linked_products.append(relation['id'])
+            result['main_item'] = relation['id']
         result['linked_ids'] = linked_products
         return cls(**result)
 
     @staticmethod
-    def getter(values: dict, *fields: str):
+    def getter(values: dict, *fields: str) -> str | int | bool | list[dict] | None:
         for field in fields:
             values = values.get(field, {})
             if values == {} or values is None:
