@@ -15,7 +15,7 @@ def save_file_from_url(url: str, filename: str) -> str:
     file_path = os.path.join(settings.UPLOAD_DIR, filename)
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code,
-                            detail=f'Ошибка при загрузке изображения:{response.text}')
+                            detail=f'Ошибка при загрузке изображения:{response.text}\nURL:{url}')
     with open(file_path, "wb") as out_file:
         out_file.write(response.content)
     return f'https://api.cehcom.kz/{file_path}'
