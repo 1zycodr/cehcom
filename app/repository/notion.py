@@ -77,6 +77,7 @@ class NotionRepo:
             for item in resp.get('results', []):
                 items.append(Item.from_response(item))
             print('Items loaded from Notion:', len(items))
+            Alert.info(f'Items loaded from Notion:{len(items)}', )
             if not resp['has_more']:
                 break
             kw['start_cursor'] = resp['next_cursor']
