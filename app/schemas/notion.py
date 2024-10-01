@@ -3,6 +3,9 @@ from enum import Enum
 
 from pydantic import BaseModel
 
+from app.repository.tgbot import Alert
+from app.utils.file_storage import save_file_from_url
+
 
 class ItemStatus(str, Enum):
     delete = 'Удалить'
@@ -56,6 +59,12 @@ class Item(BaseModel):
         result['tags'] = cls.getter(props, 'Теги формула', 'formula', 'string')
         result['sizes'] = cls.getter(props, 'Размеры формула', 'formula', 'string')
         result['photo'] = cls.getter(props, 'Фото формула', 'formula', 'string')
+        if result['photo'] != '':
+            try:
+                result['photo'] = save_file_from_url(result['photo'], f"{result['nid']}.jpg")
+            except Exception as e:
+                Alert.critical(f'Ошибка загрузки фото с Notion: {e}')
+                result['photo'] = ''
         result['photo_all'] = cls.getter(props, 'Фото все формула', 'formula', 'string')
         result['description'] = cls.getter(props, 'Описание формула', 'formula', 'string')
         main_price = cls.getter(props, 'Цена (основная)', 'number')

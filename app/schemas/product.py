@@ -247,14 +247,11 @@ class AMODTProduct(BaseModel):
 
     @classmethod
     def from_item(cls, item: Item, bt_item_id: int, body: LeadAddItemRequest) -> AMODTProduct:
-        photo = ''
-        if item.photo != '':
-            photo = save_file_from_url(item.photo, f'{bt_item_id}.jpg')
         custom_fields = [
             {
                 'field_id': 1450227,
                 'values': [
-                    {'value': photo},
+                    {'value': item.photo},
                 ],
             },
             {
