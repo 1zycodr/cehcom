@@ -49,6 +49,7 @@ class NotionService:
         try:
             if update_all:
                 Alert.info('`🔄 Полная синхронизация каталога в amoCRM...`')
+            Alert.info('`🔄 Синхронизация каталога в amoCRM...`')
             print('start sync', update_all)
             time_start = datetime.now(cls.timezone)
             items = cls.load_updated_from_notion(update_all)
@@ -77,11 +78,6 @@ class NotionService:
                     items_for_delete.append(deepcopy(item))
                 else:
                     items_for_update.append(deepcopy(item))
-
-                # if item.catalog_status != ItemStatus.delete:
-                #     items_for_create.append(deepcopy(item))
-                # else:
-                #     items_for_update_status_off.append(deepcopy(item))
 
             # обработка тех которые надо удалить
             cls.amo_repo.patch_items(items_for_delete)
