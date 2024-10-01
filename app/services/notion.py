@@ -106,6 +106,7 @@ class NotionService:
 
             if update_all:
                 Alert.info('`✅ Полная синхронизация каталога в amoCRM успешно завершена`')
+            Alert.info('`✅ Синхронизация каталога в amoCRM успешно завершена`')
         except Exception as ex:
             Alert.critical(f'`❌ Ошибка синхронизации каталога с amoCRM:\n\n{ex}`')
         red.delete('sync-running')
