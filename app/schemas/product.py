@@ -438,7 +438,7 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['value']
         return result
 
-    def get_photo(self, nid: str | None = None):
+    def get_photo(self):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450227:
