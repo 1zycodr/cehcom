@@ -52,7 +52,9 @@ class NotionService:
             Alert.info('`🔄 Синхронизация каталога в amoCRM...`')
             print('start sync', update_all)
             time_start = datetime.now(cls.timezone)
+            Alert.info('`🔄 load_updated_from_notion`')
             items = cls.load_updated_from_notion(update_all)
+            Alert.info('`🔄 get_all_products`')
             amo_items = cls.amo_repo.get_all_products()
             amo_items_ids = {
                 amo_item.nid: amo_item
@@ -80,16 +82,20 @@ class NotionService:
                     items_for_update.append(deepcopy(item))
 
             # обработка тех которые надо удалить
+            Alert.info('`🔄 patch_items`')
             cls.amo_repo.patch_items(items_for_delete)
             items_for_update_status_off.extend(items_for_delete)
 
             # проставляем статусы "удалено" в notion
+            Alert.info('`🔄 set_deleted`')
             for item in items_for_update_status_off:
                 cls.notion_repo.set_deleted(item)
 
+            Alert.info('`🔄 add_products`')
             # создание новых
             cls.amo_repo.add_products(items_for_create)
 
+            Alert.info('`🔄 patch_items`')
             # обновление старых
             # сначала ищем связанные карточки в notion
             items_for_update.extend(cls.enrich_updated_items(items, items_for_update))
