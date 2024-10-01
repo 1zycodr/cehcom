@@ -15,6 +15,8 @@ class Alert:
     @classmethod
     def critical(cls, message: str):
         print('CRITICAL', message)
+        message = message.replace('{', '\{')
+        message = message.replace('}', '\}')
         cls.bot.send_message(
             cls.chat_id,
             message,
