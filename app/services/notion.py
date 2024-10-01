@@ -50,7 +50,6 @@ class NotionService:
                 Alert.info('`🔄 Полная синхронизация каталога в amoCRM...`')
             print('start sync', update_all)
             time_start = datetime.now(cls.timezone)
-            Alert.info('`🔄 load_updated_from_notion`')
             items = cls.load_updated_from_notion(update_all)
             amo_items = cls.amo_repo.get_all_products()
             amo_items_ids = {
