@@ -247,11 +247,14 @@ class AMODTProduct(BaseModel):
 
     @classmethod
     def from_item(cls, item: Item, bt_item_id: int, body: LeadAddItemRequest) -> AMODTProduct:
+        photo = ''
+        if item.photo != '':
+            photo = save_file_from_url(item.photo, f'{bt_item_id}.jpg')
         custom_fields = [
             {
                 'field_id': 1450227,
                 'values': [
-                    {'value': item.photo},
+                    {'value': photo},
                 ],
             },
             {
@@ -435,9 +438,9 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['values'][0]['value']
                 except KeyError:
                     result = field['values'][0]['value']
-        if result is not None:
-            timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-            result = save_file_from_url(result, f'{self.id}-{timestamp}.jpg')
+        # if result is not None:
+        #     timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        #     result = save_file_from_url(result, f'{self.id}-{timestamp}.jpg')
         return result
 
     def get_notion_parent_uid(self) -> list:
