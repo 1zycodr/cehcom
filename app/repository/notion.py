@@ -194,13 +194,12 @@ class NotionRepo:
                          id: int,
                          lead_id: str,
                          lead_uid: str,
-                         quantity: int,
-                         notion_item_nid: str) -> NotionDTProduct:
+                         quantity: int) -> NotionDTProduct:
         data = cls.client.pages.update(
             page_id=uid,
             properties=item.to_notion_update(id, lead_id, lead_uid, quantity),
         )
-        url = item.get_photo(notion_item_nid)
+        url = item.get_photo()
         if url:
             cls.client.blocks.children.append(
                 block_id=uid,
@@ -251,7 +250,7 @@ class NotionRepo:
                 raise e
 
     @classmethod
-    def get_lead_item_template(cls) -> (str | None, int | None, str | None):
+    def get_lead_item_template(cls) -> (str | None, int | None):
         resp = cls.client.databases.query(
             database_id=cls.lead_items_db_id,
             filter={
@@ -271,8 +270,7 @@ class NotionRepo:
         try:
             uid = resp.get('results', [{'id': None}])[0].get('id')
             id = resp.get('results', [{}])[0].get('properties', {}).get('ID П-заказа', {}).get('unique_id', {}).get('number')
-            nid = resp.get('results', [{}])[0].get('properties', {}).get('NID', {}).get('formula', {}).get('string')
-            return uid, id, nid
+            return uid, id
         except IndexError:
             return None, None, None
 

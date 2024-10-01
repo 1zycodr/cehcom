@@ -107,7 +107,7 @@ class AMOService:
                 updated.append(item)
                 continue
 
-            uid, notion_item_id, notion_item_nid = NotionRepo.get_lead_item_template()
+            uid, notion_item_id = NotionRepo.get_lead_item_template()
             if uid is None or notion_item_id is None:
                 Alert.critical('`🛑 Создайте черновики п-заказов!`')
                 continue
@@ -124,7 +124,7 @@ class AMOService:
 
             # добавляем п-заказ в notion
             notion_item = NotionRepo.update_lead_item(
-                item, uid, notion_item_id, notion_item_lead_id, lead_uid, quantity, notion_item_nid
+                item, uid, notion_item_id, notion_item_lead_id, lead_uid, quantity
             )
             # сохраняем в базу
             lead_item_crud.create(

@@ -428,6 +428,16 @@ class AMODTProduct(BaseModel):
                     result = int(field['values'][0]['value'])
         return result
 
+    def get_nid(self) -> str:
+        result = ''
+        for field in self.custom_fields_values:
+            if int(field['field_id']) == 1450219:
+                try:
+                    result = field['values'][0]['values'][0]['value']
+                except KeyError:
+                    result = field['values'][0]['value']
+        return result
+
     def get_photo(self, nid: str | None = None):
         result = None
         for field in self.custom_fields_values:
@@ -437,12 +447,10 @@ class AMODTProduct(BaseModel):
                 except KeyError:
                     result = field['values'][0]['value']
         if result is not None:
-            if 'api.cehcom.kz' not in result:
-                result = save_file_from_url(result, f'{self.id}.jpg')
-        elif nid is not None:
-            result = save_file_from_url(settings.DEFAULT_PHOTO, f'{nid}.jpg')
+            if 'api.cehcom.kz' not in result or 'api.cehcom.kz/media/default' in result:
+                result = save_file_from_url(result, f'{self.get_nid()}.jpg')
         else:
-            result = settings.DEFAULT_PHOTO
+            result = save_file_from_url(settings.DEFAULT_PHOTO, f'{self.get_nid()}.jpg')
         return result
 
     def get_notion_parent_uid(self) -> list:
