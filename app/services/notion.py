@@ -21,7 +21,6 @@ class NotionService:
     @classmethod
     def load_updated_from_notion(cls, update_all: bool = False) -> list[Item]:
         updated_at = cls.notion_repo.load_updated_at(update_all)
-        Alert.info('`🔄 Updated at: ' + str(updated_at) + '`')
         filter = {
             "and": [
                 {
@@ -53,7 +52,6 @@ class NotionService:
             time_start = datetime.now(cls.timezone)
             Alert.info('`🔄 load_updated_from_notion`')
             items = cls.load_updated_from_notion(update_all)
-            Alert.info('`🔄 get_all_products`')
             amo_items = cls.amo_repo.get_all_products()
             amo_items_ids = {
                 amo_item.nid: amo_item
