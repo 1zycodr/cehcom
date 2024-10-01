@@ -7,7 +7,6 @@ log = get_logger()
 
 def sync_notion_amo():
     log.warn('start job sync_notion_amo')
-    Alert.info('`🔄 Синхронизация каталога (job) в amoCRM...`')
     NotionService.sync_with_amo()
 
 

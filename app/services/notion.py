@@ -49,7 +49,6 @@ class NotionService:
         try:
             if update_all:
                 Alert.info('`🔄 Полная синхронизация каталога в amoCRM...`')
-            Alert.info('`🔄 Синхронизация каталога в amoCRM...`')
             print('start sync', update_all)
             time_start = datetime.now(cls.timezone)
             Alert.info('`🔄 load_updated_from_notion`')
@@ -82,20 +81,16 @@ class NotionService:
                     items_for_update.append(deepcopy(item))
 
             # обработка тех которые надо удалить
-            Alert.info('`🔄 patch_items`')
             cls.amo_repo.patch_items(items_for_delete)
             items_for_update_status_off.extend(items_for_delete)
 
             # проставляем статусы "удалено" в notion
-            Alert.info('`🔄 set_deleted`')
             for item in items_for_update_status_off:
                 cls.notion_repo.set_deleted(item)
 
-            Alert.info('`🔄 add_products`')
             # создание новых
             cls.amo_repo.add_products(items_for_create)
 
-            Alert.info('`🔄 patch_items`')
             # обновление старых
             # сначала ищем связанные карточки в notion
             items_for_update.extend(cls.enrich_updated_items(items, items_for_update))
@@ -112,7 +107,6 @@ class NotionService:
 
             if update_all:
                 Alert.info('`✅ Полная синхронизация каталога в amoCRM успешно завершена`')
-            Alert.info('`✅ Синхронизация каталога в amoCRM успешно завершена`')
         except Exception as ex:
             Alert.critical(f'`❌ Ошибка синхронизации каталога с amoCRM:\n\n{ex}`')
         red.delete('sync-running')

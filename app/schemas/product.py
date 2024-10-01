@@ -14,6 +14,7 @@ from .lead import build_nested_dict
 from .notion import Item, ItemStatus
 
 from app.utils.file_storage import save_file_from_url
+from app.core import settings
 
 
 class NotionDTProduct(BaseModel):
@@ -427,7 +428,7 @@ class AMODTProduct(BaseModel):
                     result = int(field['values'][0]['value'])
         return result
 
-    def get_photo(self):
+    def get_photo(self, nid: str | None = None):
         result = None
         for field in self.custom_fields_values:
             if int(field['field_id']) == 1450227:
@@ -435,9 +436,13 @@ class AMODTProduct(BaseModel):
                     result = field['values'][0]['values'][0]['value']
                 except KeyError:
                     result = field['values'][0]['value']
-        # if result is not None:
-        #     timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        #     result = save_file_from_url(result, f'{self.id}-{timestamp}.jpg')
+        if result is not None:
+            if 'api.cehcom.kz' not in result:
+                result = save_file_from_url(result, f'{self.id}.jpg')
+        elif nid is not None:
+            result = save_file_from_url(settings.DEFAULT_PHOTO, f'{nid}.jpg')
+        else:
+            result = settings.DEFAULT_PHOTO
         return result
 
     def get_notion_parent_uid(self) -> list:

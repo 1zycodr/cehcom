@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     # files
     UPLOAD_DIR: str = 'media'
 
+    # default photo link
+    DEFAULT_PHOTO: str = 'https://api.cehcom.kz/media/default.jpg'
+
     @field_validator('SQLALCHEMY_DATABASE_URI', mode='after')
     def assemble_db_connection(cls, v: str, values: FieldValidationInfo) -> str:
         if v is not None:
