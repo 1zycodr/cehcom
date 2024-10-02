@@ -33,7 +33,7 @@ if settings.ENVIRONMENT != settings.Environment.local.value:
 
 
 @app.on_event('startup')
-@repeat_every(seconds=60, wait_first=True)
+@repeat_every(seconds=10, wait_first=True)
 def sync():
     if red.get('sync-running') is not None:
         print('sync already running')
