@@ -344,3 +344,22 @@ class AmoRepo:
 
         return result
 
+    @classmethod
+    def delete_from_catalog(cls, ids: list[int | str]):
+        time.sleep(.2)
+        url = '/api/v2/catalog_elements'
+        access_token = "Bearer " + settings.AMOCRM_ACCESS_TOKEN
+        headers = {
+            "Authorization": access_token,
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(
+            "https://{}.amocrm.ru{}".format(settings.AMOCRM_SUBDOMAIN, url),
+            headers=headers,
+            json={'delete': ids},
+        )
+        if response.status_code == 200:
+            print(f"Items {ids} deleted successfully!")
+        else:
+            print(f"Failed to delete items {ids}: {response.status_code} - {response.text}")

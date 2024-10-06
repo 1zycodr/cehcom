@@ -43,6 +43,7 @@ class Item(BaseModel):
     last_edited_by: str = ''  # last edited by
     created_by: str = ''  # Created by
     linked_ids: list[str] | None = None
+    subproducts_ids: list[str] | None = None
     main_item: str = ''
 
     @classmethod
@@ -86,14 +87,17 @@ class Item(BaseModel):
 
         # подпродукты и главный продукт собираем как связанные
         linked_products = []
+        subproducts_ids = []
         subproducts = cls.getter(props, 'Подпродукт', 'relation')
         for relation in subproducts:
             linked_products.append(relation['id'])
+            subproducts_ids.append(relation['id'])
         main_products = cls.getter(props, 'Главный продукт', 'relation')
         for relation in main_products:
             linked_products.append(relation['id'])
             result['main_item'] = relation['id']
         result['linked_ids'] = linked_products
+        result['subproducts_ids'] = subproducts_ids
         return cls(**result)
 
     @staticmethod
