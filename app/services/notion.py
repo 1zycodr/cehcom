@@ -21,6 +21,7 @@ class NotionService:
     @classmethod
     def load_updated_from_notion(cls, update_all: bool = False) -> list[Item]:
         updated_at = cls.notion_repo.load_updated_at(update_all)
+        print('load_updated_from_notion', updated_at)
         filter = {
             "and": [
                 {
