@@ -13,6 +13,13 @@ class ItemStatus(str, Enum):
     reserve = 'Резерв'
     on = 'Включено'
     on_usn = 'Включено только в УСН'
+    individual = 'Индивидуальный'
+
+
+class ItemWPProductType(str, Enum):
+    simple = 'Простой товар'
+    variable = 'Вариация'
+    main = 'Главный товар'
 
 
 class Item(BaseModel):
