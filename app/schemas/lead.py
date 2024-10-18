@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, model_validator
 
 from app.repository.tgbot import Alert
@@ -72,9 +72,9 @@ class Lead(BaseModel):
         date_start = self.custom_fields.get('1421827', {}).get('values', [''])[0]
         date_end = self.custom_fields.get('1421829', {}).get('values', [''])[0]
         if date_start != '':
-            date_start = datetime.fromtimestamp(int(date_start), timezone.utc).strftime('%Y-%m-%d')
+            date_start = (datetime.fromtimestamp(int(date_start), timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%d')
         if date_end != '':
-            date_end = datetime.fromtimestamp(int(date_end), timezone.utc).strftime('%Y-%m-%d')
+            date_end = (datetime.fromtimestamp(int(date_end), timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%d')
         return date_start, date_end
 
     def contract_number(self) -> str:
