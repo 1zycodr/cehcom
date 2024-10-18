@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     AMOCRM_ACCESS_TOKEN: str = ''
     AMOCRM_REFRESH_TOKEN: str = ''
 
+    # Wordpress credentials
+    WP_USERNAME: str
+    WP_PASSWORD: str
+
     # Notion secrets
     NOTION_SECRET: str
 

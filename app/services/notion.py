@@ -10,11 +10,13 @@ from ..core.config import red
 from ..repository.amocrm import AmoRepo
 from ..repository.notion import NotionRepo
 from ..repository.tgbot import Alert
+from ..repository.wordpress import WordpressRepository
 
 
 class NotionService:
     notion_repo: NotionRepo = NotionRepo()
     amo_repo: AmoRepo = AmoRepo()
+    wp_repo: WordpressRepository = WordpressRepository()
     client = Client(auth=settings.NOTION_SECRET)
     timezone = pytz.timezone('Asia/Almaty')
 
@@ -36,6 +38,14 @@ class NotionService:
                         "on_or_after": updated_at,
                     },
                 },
+                {
+                    'property': 'NID',
+                    'formula': {
+                        'string': {
+                            'equals': '02034',
+                        }
+                    },
+                }
             ],
         }
         time_start = datetime.now(cls.timezone)
@@ -54,12 +64,19 @@ class NotionService:
             items = cls.load_updated_from_notion(update_all)
 
             amo_items = []
+            wp_items = []
             if len(items) != 0:
                 amo_items = cls.amo_repo.get_all_products()
+                wp_items = cls.wp_repo.get_all_products()
 
             amo_items_ids = {
                 amo_item.nid: amo_item
                 for amo_item in amo_items
+            }
+
+            wp_items_ids = {
+                wp_item.nid: wp_item
+                for wp_item in wp_items
             }
 
             items_for_update = []

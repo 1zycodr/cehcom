@@ -52,6 +52,9 @@ class Item(BaseModel):
     linked_ids: list[str] | None = None
     subproducts_ids: list[str] | None = None
     main_item: str = ''
+    wp_description: str = ''
+    description_variations: str = ''
+    wp_product_type: ItemWPProductType = ''
 
     @classmethod
     def from_response(cls, resp: dict) -> Item:
@@ -91,7 +94,12 @@ class Item(BaseModel):
         result['last_edited_time'] = cls.getter(resp, 'last_edited_time')
         result['last_edited_by'] = cls.getter(resp, 'last_edited_by', 'id')
         result['created_by'] = cls.getter(resp, 'created_by', 'id')
-
+        result['wp_description'] = cls.getter(props, 'WP: Описание', 'formula', 'string')
+        result['wp_product_type'] = cls.getter(props, 'WP: Тип продукта', 'formula', 'string')
+        try:
+            result['description_variations'] = props['Описание вариации']['rich_text'][0]['text']['content']
+        except (KeyError, IndexError):
+            result['description_variations'] = ''
         # подпродукты и главный продукт собираем как связанные
         linked_products = []
         subproducts_ids = []
@@ -114,3 +122,89 @@ class Item(BaseModel):
             if values == {} or values is None:
                 return ''
         return values
+
+
+class WPItemType(str, Enum):
+    simple = 'simple'
+    variable = 'variable'
+
+
+class WPItemStatus(str, Enum):
+    draft = 'draft'
+    publish = 'publish'
+
+
+class WPItem(BaseModel):
+    wp_id: int | None = None
+    title: str = ''
+    type: WPItemType = ''
+    short_description: str = ''
+    price: int = 0
+    sku: str = ''
+    nid: str = ''
+    variation_description: str = ''
+    status: WPItemStatus = ''
+    images: list[str]
+    manage_stock: bool = True
+    stock_status: str = 'onbackorder'
+
+    @classmethod
+    def from_notion_item(cls, item: Item) -> WPItem:
+        data = {
+            'nid': item.nid,
+            'title': item.clear_title,
+            'short_description': item.wp_description,
+            'price': item.main_price,
+            'sku': item.article,
+            'variation_description': item.description_variations,
+            'images': item.photo_all.split(';\n\n'),
+        }
+        if item.catalog_status in (ItemStatus.on, ItemStatus.on_usn):
+            data['status'] = WPItemStatus.publish
+        else:
+            data['status'] = WPItemStatus.draft
+        if item.wp_product_type == ItemWPProductType.simple:
+            data['type'] = WPItemType.simple
+        else:
+            data['type'] = WPItemType.variable
+        return cls(**data)
+
+    @classmethod
+    def from_response(cls, resp: dict) -> WPItem:
+        attributes = resp.get('attributes', [])
+        attributes = {
+            attr['id']: attr['options']
+            for attr in attributes
+        }
+        data = {
+            'wp_id': resp.get('id', None),
+            'title': resp.get('name', ''),
+            'type': resp.get('type', ''),
+            'description': resp.get('description', ''),
+            'price': int(float(resp.get('price', 0))),
+            'sku': resp.get('sku', ''),
+            'nid': attributes.get(9, [''])[0],
+        }
+        return cls(**data)
+
+    @classmethod
+    def to_dict(cls, item: WPItem) -> dict:
+        result = {
+            'name': item.title,
+            'type': item.type,
+            'regular_price': item.price,
+            'description': item.description,
+            'short_description': item.description,
+            'images': [
+                {
+                    'src': item.photo,
+                }
+            ],
+            'attributes': [
+                {
+                    'id': 9,
+                    'options': [item.nid],
+                },
+            ],
+        }
+        return result
